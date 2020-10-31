@@ -74,10 +74,30 @@ func init(){
 
 	fmt.Println("threadmanager 初始化完成")
 
-	err := StartThread("111")
-	if err != nil {
-		panic(err)
-	}
+	go func() {
+		err := StartThread("111")
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	time.Sleep(20*time.Second)
+	go func() {
+		err := StartThread("222")
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+	time.Sleep(20*time.Second)
+	go func() {
+		err := StartThread("333")
+		if err != nil {
+			panic(err)
+		}
+	}()
+
+
 }
 
 
@@ -105,9 +125,9 @@ func StartThread(threadId string)error{
 	}
 
 
-	fmt.Println(len(rows))
+	fmt.Println(threadId,len(rows))
 	for i:=4;i<len(rows);i++{
-		fmt.Println(rows[i][0])
+		fmt.Println(threadId,rows[i][0])
 		//读入行资源
 		var resourceRecord []resourceApplyAndReturn
 		for j:=4;j<=11;j++{
@@ -166,7 +186,7 @@ func StartThread(threadId string)error{
 
 		//有需要申请的资源
 		if len(applyresources)>0{
-			fmt.Println("applyresources:",applyresources)
+			fmt.Println(threadId,"applyresources:",applyresources)
 
 			applyresult,err=resourcemanager.ApplyResource(threadId,applyresources)
 			if err != nil {
@@ -181,7 +201,7 @@ func StartThread(threadId string)error{
 
 		}
 
-		fmt.Println("已经获得申请id",applyresult)
+		fmt.Println(threadId,"已经获得申请id",applyresult)
 
 		//2.允许通过后 开始模拟动作 等待时间后执行完成
 
@@ -189,7 +209,7 @@ func StartThread(threadId string)error{
 		if err != nil {
 			return err
 		}
-		executeAction(rows[i][1],rows[i][2],params,duration)
+		executeAction(threadId,rows[i][1],rows[i][2],params,duration)
 
 
 
@@ -220,7 +240,7 @@ func StartThread(threadId string)error{
 
 		if len(returnresources)>0{
 
-			fmt.Println("returnresources",returnresources)
+			fmt.Println(threadId,"returnresources",returnresources)
 
 			err=resourcemanager.ReturnResource(threadId,returnresources)
 			if err != nil {
@@ -236,13 +256,16 @@ func StartThread(threadId string)error{
 	}
 
 	//从threadmap中去除此线程
+	fmt.Println(threadId,"目前线程资源管理器情况:",_threadTable[threadId].threadResources)
 	delete(_threadTable,threadId)
 
+	//从offeredmap中除去此线程
+	fmt.Println(threadId,"目前资源管理器情况:",resourcemanager.applyingList,resourcemanager.offeredMap)
+	resourcemanager.clearOfferedMapByUserName(threadId)
 
 
-	fmt.Println("线程执行完毕!",threadId)
-	fmt.Println("目前线程资源管理器情况:",_threadTable[threadId].threadResources)
-	fmt.Println("目前资源管理器情况:",resourcemanager.applyingList,resourcemanager.offeredMap)
+	fmt.Println(threadId,"线程执行完毕!",threadId)
+
 
 
 	return nil
@@ -262,13 +285,13 @@ func getIdbyNameFromApplyResult(resourcename string,applyresult ResourceSet) (in
 
 
 //模拟动作执行
-func executeAction(actionName string,actionNameZH string,params interface{},duration int){
+func executeAction(threadId string,actionName string,actionNameZH string,params interface{},duration int){
 
 	defer timeCost(time.Now())
-	fmt.Println("动作开始:",actionName,actionNameZH,params)
+	fmt.Println(threadId,"动作开始:",actionName,actionNameZH,params)
 
 	time.Sleep(time.Duration(duration/20) * time.Second)
-	fmt.Println("动作执行完毕!",actionName)
+	fmt.Println(threadId,"动作执行完毕!",actionName)
 }
 
 //耗时统计

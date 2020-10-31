@@ -191,7 +191,7 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 			fmt.Println("成功获得资源",username,resources)
 			return getresourceset,nil
 
-		case <-time.After(20 * time.Second):
+		case <-time.After(100 * time.Second):
 			fmt.Println("申请等待超时!",username,resources)
 			return nil,errors.New("timeout")
 	}
@@ -210,7 +210,7 @@ func (r *ResourceManager)ReturnResource(username string ,resources ResourceSet)e
 		//资源管理器中还回去
 		r.resources[resourcename][id].Enable=true
 		//offerdMap中去掉
-		err:=r.removeFromOfferdMap(username,resourcename,id)
+		err:=r.removeResourceFromOfferedMap(username,resourcename,id)
 		if err != nil {
 			return err
 		}
@@ -220,7 +220,7 @@ func (r *ResourceManager)ReturnResource(username string ,resources ResourceSet)e
 	return nil
 }
 
-func (r *ResourceManager)removeFromOfferdMap(username string,resourcename string,id int)error{
+func (r *ResourceManager) removeResourceFromOfferedMap(username string,resourcename string,id int)error{
 	for i:=0;i<len(r.offeredMap[username]);i++{
 		//找到后删除
 		if r.offeredMap[username][i].ResourceName==resourcename && r.offeredMap[username][i].ResourceId==id{
@@ -260,7 +260,7 @@ func (r *ResourceManager)PollingList()error {
 
 			//表示申请成功 挂入offeredMap 记录下被谁取走
 			for i:=0;i<len(checkresult.applyResourceSet);i++{
-
+				//如果不存在则会新建
 				r.offeredMap[applyitem.userName]=append(r.offeredMap[applyitem.userName], checkresult.applyResourceSet[i])
 
 			}
@@ -361,4 +361,9 @@ func (r *ResourceManager)getAllResourcesAvailableFromResult(checkresult applyIte
 		r.resources[name][id].Enable=false
 	}
 	return nil
+}
+
+//清理offeredmap 把对应线程的内容删除掉
+func (r *ResourceManager)clearOfferedMapByUserName(username string){
+	delete(r.offeredMap,username)
 }
