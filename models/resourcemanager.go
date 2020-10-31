@@ -194,9 +194,10 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 			color.Unset()
 			return getresourceset,nil
 
-		case <-time.After(100 * time.Second):
+		case <-time.After(200 * time.Second):
 			color.Set(color.BgRed,color.FgBlack)
-			fmt.Println("申请等待超时!",username,resources)
+			fmt.Println("申请等待超时!")
+			fmt.Println(username,resources)
 			color.Unset()
 			return nil,errors.New("timeout")
 	}
@@ -245,7 +246,7 @@ func (r *ResourceManager)PollingList()error {
 		// do something with e.Value 天坑这里 先把next存下来 万一删除了就找不到下一个了
 		next = e.Next()
 		applyitem:=e.Value.(applyItem)
-		fmt.Println(applyitem)
+		fmt.Println("轮询中资源需求",applyitem)
 		//检查这个节点里面的资源是否全部可用
 		available,checkresult,err:= r.checkAllResourcesAvailableFromOneApplyItem(applyitem)
 		if err != nil {
