@@ -42,16 +42,20 @@ func init(){
 
 	fmt.Println(_r.resources)
 
-	err = StartThread(1)
-	if err != nil {
-		panic(err)
-	}
+
+	//一秒一次轮询用于list
+	go func() {
+		for{
+			_ = _r.PollingList()
+			time.Sleep(1000 * time.Millisecond)
+		}
+	}()
 
 
 
 }
 
-//资源描述 申请和响应都用同样结构 根据实际情况使用不同字段
+//资源描述符 申请和响应都用同样结构 根据实际情况使用不同字段
 type ResourceDescriptor struct {
 	//查询是返回状态
 	Status int
@@ -74,7 +78,6 @@ type applyItem struct{
 }
 
 
-
 type ResourceManager struct {
 	//这个锁用来保证map多线程查询和更改时候的安全性 官方解决方案
 	sync.RWMutex
@@ -88,7 +91,7 @@ type ResourceManager struct {
 	applyingList *list.List
 
 	//已经被借走的资源列表 谁借了什么
-	offeredList *list.List
+	offeredMap map[string] [] ResourceDescriptor
 
 }
 
@@ -98,7 +101,7 @@ func NewResourceManager()*ResourceManager{
 		RWMutex:      sync.RWMutex{},
 		resources:    nil,
 		applyingList: nil,
-		offeredList:  nil,
+		offeredMap:  nil,
 	}
 }
 
@@ -113,8 +116,12 @@ func GetResourceManager()(*ResourceManager,error){
 //根据配置 初始化资源管理器 主要是置其中各种资源
 func (r *ResourceManager)Init()error{
 
-	r.resources=make(map[string] ResourceSet)
+	//初始化两个list
+	r.applyingList=list.New()
 
+
+	r.resources=make(map[string] ResourceSet)
+	r.offeredMap=make(map[string] [] ResourceDescriptor)
 
 	for i:=4;i<=11;i++{
 		//挂资源名
@@ -153,9 +160,14 @@ func (r *ResourceManager) registerResource(resourcename string,recourceamount in
 
 
 
-//向资源管理器申请某些资源 当全部都可以被使用时候返回 否则阻塞 可能会超时
+//向资源管理器申请某些资源 可以一次申请多个 当全部都可以被使用时候返回 否则阻塞 可能会超时
 func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (ResourceSet,error){
-	fmt.Println("提出申请",username,resources)
+	//不需要申请 就不要瞎参和
+	if len(resources)==0{
+		return nil,errors.New("empty resource apply")
+	}
+
+
 
 	var getresourceset ResourceSet
 	//测试 一旦申请 直接满足回复 用于单线程测试
@@ -164,6 +176,8 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 		applyResourceSet: resources,
 		resultChan:       make(chan ResourceSet),
 	}
+
+	fmt.Println("提出申请",applyitem)
 
 	//注册到申请列表
 	r.listLock.Lock()
@@ -177,7 +191,7 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 			fmt.Println("成功获得资源",username,resources)
 			return getresourceset,nil
 
-		case <-time.After(100 * time.Second):
+		case <-time.After(20 * time.Second):
 			fmt.Println("申请等待超时!",username,resources)
 			return nil,errors.New("timeout")
 	}
@@ -185,34 +199,80 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 }
 
 
-//归还资源
+//归还资源 强调 归还的资源需要携带id!!!
 func (r *ResourceManager)ReturnResource(username string ,resources ResourceSet)error{
 	fmt.Println("开始归还",username,resources)
 
+	for i:=0;i<len(resources);i++{
+		resourcename:=resources[i].ResourceName
+		id:=resources[i].ResourceId
+
+		//资源管理器中还回去
+		r.resources[resourcename][id].Enable=true
+		//offerdMap中去掉
+		err:=r.removeFromOfferdMap(username,resourcename,id)
+		if err != nil {
+			return err
+		}
+	}
+
+	fmt.Println("已归还",username,resources)
+	return nil
+}
+
+func (r *ResourceManager)removeFromOfferdMap(username string,resourcename string,id int)error{
+	for i:=0;i<len(r.offeredMap[username]);i++{
+		//找到后删除
+		if r.offeredMap[username][i].ResourceName==resourcename && r.offeredMap[username][i].ResourceId==id{
+			r.offeredMap[username]=append(r.offeredMap[username][:i], r.offeredMap[username][i+1:]...)
+		}
+	}
 	return nil
 }
 
 //核心!通过查找applyList 查找是否能够满足用户需求 并返回用户申请 ,,,每秒调用一次
 //若是多资源申请 要全部资源都可用情况下 才为可用 并返回全部资源到对应applyItem的resultChan里面
-func (r *ResourceManager)CheckList()error {
+func (r *ResourceManager)PollingList()error {
+
+	//fmt.Println("进入polling...")
 	var next *list.Element
 	for e := r.applyingList.Front(); e != nil; e = next {
 		// do something with e.Value 天坑这里 先把next存下来 万一删除了就找不到下一个了
 		next = e.Next()
-
+		applyitem:=e.Value.(applyItem)
+		fmt.Println(applyitem)
 		//检查这个节点里面的资源是否全部可用
-		available,err:= r.allResourcesAvailable(e.Value.(applyItem))
+		available,checkresult,err:= r.checkAllResourcesAvailableFromOneApplyItem(applyitem)
 		if err != nil {
 			return err
 		}
 
 		//全部资源可用
 		if available==true{
+			//去资源管理器记录下来
+			err:=r.getAllResourcesAvailableFromResult(checkresult)
+			if err != nil {
+				return err
+			}
+
+			//申请已经得到满足 从申请列表中去除
+			r.applyingList.Remove(e)
+
+			//表示申请成功 挂入offeredMap 记录下被谁取走
+			for i:=0;i<len(checkresult.applyResourceSet);i++{
+
+				r.offeredMap[applyitem.userName]=append(r.offeredMap[applyitem.userName], checkresult.applyResourceSet[i])
+
+			}
 
 
+			fmt.Println(checkresult.userName,"获得资源",checkresult.applyResourceSet)
+
+			//结果用通道返回
+			e.Value.(applyItem).resultChan <- checkresult.applyResourceSet
 
 
-		//	不是全部资源可用
+		//	不是全部资源可用 那就只有算求
 		}else{
 
 
@@ -225,16 +285,26 @@ func (r *ResourceManager)CheckList()error {
 	return nil
 }
 
-func (r *ResourceManager)allResourcesAvailable(applyitem applyItem)(bool,error){
+
+//检查节点内部的是否全部资源可用 返回是否可用,可用的资源,和错误
+func (r *ResourceManager)checkAllResourcesAvailableFromOneApplyItem(applyitem applyItem)(bool,applyItem,error){
 	//查询时锁住 其实没必要 因为一次只能一个查询
 	//r.queryLock.Lock()
 	allright:=true
 
 	for i:=0;i<len(applyitem.applyResourceSet);i++{
 		name:=applyitem.applyResourceSet[i].ResourceName
-		id:=applyitem.applyResourceSet[i].ResourceId
-		if r.resources[name][id].Enable==true{
 
+		//id是不知道的
+		affect,id,err:=r.checkResourceEnableFromResourceMap(name)
+		if err != nil {
+			return false,applyitem,err
+		}
+
+		//找到了资源
+		if affect==true{
+			//id记录下来
+			applyitem.applyResourceSet[i].ResourceId=id
 
 		}else{
 
@@ -243,17 +313,16 @@ func (r *ResourceManager)allResourcesAvailable(applyitem applyItem)(bool,error){
 
 		}
 
-
 	}
 
 	//都有
 	if allright==true{
 
-		return true,nil
-	//	有一个没有
+		return true,applyitem,nil
+	//至少有一个没有
 	}else{
 
-		return false,nil
+		return false,applyitem,nil
 
 	}
 
@@ -262,5 +331,34 @@ func (r *ResourceManager)allResourcesAvailable(applyitem applyItem)(bool,error){
 	//查完了 放开
 	//r.queryLock.Unlock()
 
+}
 
+//检查并返回具体资源可用的那个Id 没找到则返回false
+func (r *ResourceManager) checkResourceEnableFromResourceMap(resourcename string)(bool,int,error){
+
+	for i:=0;i<len(r.resources[resourcename]);i++{
+
+		if r.resources[resourcename][i].Enable==true{
+			return	true, i, nil
+		}
+
+	}
+
+	//没有空闲资源
+	return false, 0, nil
+}
+
+
+
+
+
+//通过对资源管理器资源标记,来把资源分配给用户 在先调用可用判断后才能分配
+func (r *ResourceManager)getAllResourcesAvailableFromResult(checkresult applyItem)error{
+	for i:=0;i<len(checkresult.applyResourceSet);i++{
+		name:=checkresult.applyResourceSet[i].ResourceName
+		id:=checkresult.applyResourceSet[i].ResourceId
+		//登记处取下来
+		r.resources[name][id].Enable=false
+	}
+	return nil
 }

@@ -3,9 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="d41d6c1c-b573-4647-9746-2e4e59b8889d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Book1.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Book1.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/helloprecision.exe" beforeDir="false" afterPath="$PROJECT_DIR$/helloprecision.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/resourcemanager.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/resourcemanager.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models/threadmanager.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/threadmanager.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +38,7 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../omron" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">
@@ -46,5 +46,24 @@
   </component>
   <component name="VgoProject">
     <integration-enabled>true</integration-enabled>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="549" y="215" key="FileChooserDialogImpl" timestamp="1604050864528">
+      <screen x="0" y="0" width="1536" height="920" />
+    </state>
+    <state x="549" y="215" key="FileChooserDialogImpl/-1920.107.1280.687/0.0.1536.920/1920.0.1536.824@0.0.1536.920" timestamp="1604050864528" />
+    <state x="1920" y="4" width="1134" height="906" maximized="true" key="dock-window-1" timestamp="1604046069151">
+      <screen x="1920" y="0" width="1536" height="824" />
+    </state>
+    <state x="1920" y="4" width="1134" height="906" maximized="true" key="dock-window-1/-1920.107.1280.687/0.0.1536.920/1920.0.1536.824@0.0.1536.920" timestamp="1604046069151" />
+    <state x="-1865" y="324" width="579" height="773" key="dock-window-1/0.0.1707.920@0.0.1707.920" timestamp="1603981058083" />
+    <state x="2388" y="10" width="600" height="804" key="find.popup" timestamp="1604055907881">
+      <screen x="1920" y="0" width="1536" height="824" />
+    </state>
+    <state x="2388" y="10" width="600" height="804" key="find.popup/-1920.107.1280.687/0.0.1536.920/1920.0.1536.824@0.0.1536.920" timestamp="1604055907881" />
+    <state x="431" y="195" width="672" height="678" key="search.everywhere.popup" timestamp="1604045399903">
+      <screen x="0" y="0" width="1536" height="920" />
+    </state>
+    <state x="431" y="195" width="672" height="678" key="search.everywhere.popup/-1920.107.1280.687/0.0.1536.920/1920.0.1536.824@0.0.1536.920" timestamp="1604045399903" />
   </component>
 </project>
