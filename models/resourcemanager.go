@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
+	"github.com/fatih/color"
 	"strconv"
 	"sync"
 	"time"
@@ -188,11 +189,15 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 	//阻塞等待 可能会超时
 	select{
 		case getresourceset = <-applyitem.resultChan:
+			color.Set(color.BgGreen,color.FgBlack)
 			fmt.Println("成功获得资源",username,resources)
+			color.Unset()
 			return getresourceset,nil
 
 		case <-time.After(100 * time.Second):
+			color.Set(color.BgRed,color.FgBlack)
 			fmt.Println("申请等待超时!",username,resources)
+			color.Unset()
 			return nil,errors.New("timeout")
 	}
 

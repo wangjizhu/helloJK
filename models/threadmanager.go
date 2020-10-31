@@ -3,8 +3,10 @@ package models
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"strconv"
 	"time"
+	"github.com/fatih/color"
 )
 
 
@@ -74,29 +76,15 @@ func init(){
 
 	fmt.Println("threadmanager 初始化完成")
 
-	go func() {
-		err := StartThread("111")
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	time.Sleep(20*time.Second)
-	go func() {
-		err := StartThread("222")
-		if err != nil {
-			panic(err)
-		}
-	}()
-
-	time.Sleep(20*time.Second)
-	go func() {
-		err := StartThread("333")
-		if err != nil {
-			panic(err)
-		}
-	}()
-
+	for i:=1;i<=100;i++{
+		go func() {
+			err := StartThread(fmt.Sprintf("%d%d%d",i,i,i))
+			if err != nil {
+				panic(err)
+			}
+		}()
+		time.Sleep(70*time.Second)
+	}
 
 }
 
@@ -127,7 +115,10 @@ func StartThread(threadId string)error{
 
 	fmt.Println(threadId,len(rows))
 	for i:=4;i<len(rows);i++{
+		color.Set(color.FgBlue)
 		fmt.Println(threadId,rows[i][0])
+		color.Unset()
+
 		//读入行资源
 		var resourceRecord []resourceApplyAndReturn
 		for j:=4;j<=11;j++{
@@ -186,7 +177,10 @@ func StartThread(threadId string)error{
 
 		//有需要申请的资源
 		if len(applyresources)>0{
+			color.Set(color.FgYellow)
 			fmt.Println(threadId,"applyresources:",applyresources)
+			color.Unset()
+
 
 			applyresult,err=resourcemanager.ApplyResource(threadId,applyresources)
 			if err != nil {
@@ -200,12 +194,12 @@ func StartThread(threadId string)error{
 			}
 
 		}
-
+		color.Set(color.FgGreen)
 		fmt.Println(threadId,"已经获得申请id",applyresult)
-
+		color.Unset()
 		//2.允许通过后 开始模拟动作 等待时间后执行完成
 
-		duration,err:=strconv.Atoi(rows[i][13])
+		duration,err:=strconv.ParseFloat(rows[i][13], 32)
 		if err != nil {
 			return err
 		}
@@ -239,8 +233,9 @@ func StartThread(threadId string)error{
 		}
 
 		if len(returnresources)>0{
-
+			color.Set(color.FgYellow)
 			fmt.Println(threadId,"returnresources",returnresources)
+			color.Unset()
 
 			err=resourcemanager.ReturnResource(threadId,returnresources)
 			if err != nil {
@@ -263,8 +258,9 @@ func StartThread(threadId string)error{
 	fmt.Println(threadId,"目前资源管理器情况:",resourcemanager.applyingList,resourcemanager.offeredMap)
 	resourcemanager.clearOfferedMapByUserName(threadId)
 
-
+	color.Set(color.FgCyan)
 	fmt.Println(threadId,"线程执行完毕!",threadId)
+	color.Unset()
 
 
 
@@ -285,13 +281,22 @@ func getIdbyNameFromApplyResult(resourcename string,applyresult ResourceSet) (in
 
 
 //模拟动作执行
-func executeAction(threadId string,actionName string,actionNameZH string,params interface{},duration int){
+func executeAction(threadId string,actionName string,actionNameZH string,params interface{},duration float64){
 
 	defer timeCost(time.Now())
-	fmt.Println(threadId,"动作开始:",actionName,actionNameZH,params)
 
-	time.Sleep(time.Duration(duration/20) * time.Second)
+	color.Set(color.FgHiCyan)
+	fmt.Println(threadId,"动作开始:",actionName,actionNameZH,params)
+	color.Unset()
+
+	rand.Seed(time.Now().UnixNano())
+	//执行时间自己的时间加上可能的0%-20%往上浮动
+	time.Sleep(time.Duration(duration*(1+0.2*rand.Float64())*1000/20) * time.Millisecond)
+
+
+	color.Set(color.FgHiMagenta)
 	fmt.Println(threadId,"动作执行完毕!",actionName)
+	color.Unset()
 }
 
 //耗时统计
