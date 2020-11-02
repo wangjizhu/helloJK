@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="d41d6c1c-b573-4647-9746-2e4e59b8889d" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Book1.xlsx" beforeDir="false" afterPath="$PROJECT_DIR$/Book1.xlsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/helloprecision.exe" beforeDir="false" afterPath="$PROJECT_DIR$/helloprecision.exe" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/resourcemanager.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/resourcemanager.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/threadmanager.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/threadmanager.go" afterDir="false" />

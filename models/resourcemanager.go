@@ -87,6 +87,7 @@ type ResourceManager struct {
 
 	//全部的资源纪录
 	resources map[string] ResourceSet
+	baseParams map[string] []int
 
 	//正在申请中的list 需要满足 谁想要接什么
 	applyingList *list.List
@@ -124,7 +125,13 @@ func (r *ResourceManager)Init()error{
 	r.resources=make(map[string] ResourceSet)
 	r.offeredMap=make(map[string] [] ResourceDescriptor)
 
-	for i:=4;i<=11;i++{
+	r.baseParams=make(map[string] []int)
+	for s:=0;s<Num_of_Samples;s++{
+		r.baseParams["样本装载位指定位置"] = append(r.baseParams["样本装载位指定位置"], s+11)
+	}
+
+
+	for i:=4;i<=12;i++{
 		//挂资源名
 		rname:=rows[2][i]
 		r.resources[rname]=ResourceSet{}
@@ -149,6 +156,8 @@ func (r *ResourceManager)Init()error{
 		}
 
 	}
+
+
 
 	return nil
 }
@@ -194,7 +203,7 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 			color.Unset()
 			return getresourceset,nil
 
-		case <-time.After(200 * time.Second):
+		case <-time.After(40 * time.Second):
 			color.Set(color.BgRed,color.FgBlack)
 			fmt.Println("申请等待超时!")
 			fmt.Println(username,resources)
@@ -372,4 +381,19 @@ func (r *ResourceManager)getAllResourcesAvailableFromResult(checkresult applyIte
 //清理offeredmap 把对应线程的内容删除掉
 func (r *ResourceManager)clearOfferedMapByUserName(username string){
 	delete(r.offeredMap,username)
+}
+
+
+func (r *ResourceManager)getIdbyNameFromBaseParams(paramname string)(int,error){
+
+	if len(r.baseParams[paramname])>0{
+
+		value:=r.baseParams[paramname][0]
+		r.baseParams[paramname] = append(r.baseParams[paramname][:0], r.baseParams[paramname][1:]...)
+
+		return value,nil
+
+	}
+
+	return -1,errors.New(paramname+"is empty!")
 }

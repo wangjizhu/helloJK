@@ -11,6 +11,10 @@ import (
 
 
 const (
+	Num_of_Threads= 6
+	Num_of_Samples=Num_of_Threads*8
+
+
 	Thread_Status_Runing=iota
 	Thread_Status_Paused
 	Thread_Status_Stoped
@@ -23,6 +27,7 @@ type threadDescriptor struct{
 	threadName string
 	threadResources []ResourceDescriptor
 	threadStatus int
+	threadParams interface{}
 }
 
 func NewThreadDescriptor(threadname string)*threadDescriptor{
@@ -76,14 +81,14 @@ func init(){
 
 	fmt.Println("threadmanager 初始化完成")
 
-	for i:=1;i<=100;i++{
+	for i:=1;i<=Num_of_Threads;i++{
 		go func() {
 			err := StartThread(fmt.Sprintf("%d%d%d",i,i,i))
 			if err != nil {
 				panic(err)
 			}
 		}()
-		time.Sleep(70*time.Second)
+		time.Sleep(80*time.Second)
 	}
 
 }
@@ -121,7 +126,7 @@ func StartThread(threadId string)error{
 
 		//读入行资源
 		var resourceRecord []resourceApplyAndReturn
-		for j:=4;j<=11;j++{
+		for j:=4;j<=12;j++{
 
 
 			rs:=resourceApplyAndReturn{
@@ -203,8 +208,11 @@ func StartThread(threadId string)error{
 		if err != nil {
 			return err
 		}
-		executeAction(threadId,rows[i][1],rows[i][2],params,duration)
 
+		err=executeAction(threadId,rows[i][1],rows[i][2],params,duration)
+		if err != nil {
+			return err
+		}
 
 
 		//3.执行完成后 根据策略 归还相应资源
@@ -243,7 +251,7 @@ func StartThread(threadId string)error{
 			}
 
 			//归还后 需要在线程记录中剔除次资源占用标记
-			_threadTable[threadId].removeResource(returnresources)
+			_ = _threadTable[threadId].removeResource(returnresources)
 
 		}
 
@@ -255,10 +263,12 @@ func StartThread(threadId string)error{
 	delete(_threadTable,threadId)
 
 	//从offeredmap中除去此线程
-	fmt.Println(threadId,"目前资源管理器情况:",resourcemanager.applyingList,resourcemanager.offeredMap)
-	resourcemanager.clearOfferedMapByUserName(threadId)
 
-	color.Set(color.FgCyan)
+	resourcemanager.clearOfferedMapByUserName(threadId)
+	fmt.Println(threadId,"目前资源管理器情况:",resourcemanager.applyingList,resourcemanager.offeredMap)
+
+
+	color.Set(color.FgHiRed)
 	fmt.Println(threadId,"线程执行完毕!",threadId)
 	color.Unset()
 
@@ -281,9 +291,41 @@ func getIdbyNameFromApplyResult(resourcename string,applyresult ResourceSet) (in
 
 
 //模拟动作执行
-func executeAction(threadId string,actionName string,actionNameZH string,params interface{},duration float64){
+func executeAction(threadId string,actionName string,actionNameZH string,params interface{},duration float64)error{
 
 	defer timeCost(time.Now())
+
+	//如果有必要 先做参数替换和保存
+	if actionName=="DP1MovePipe()"{
+		//如果是这个参数 从参数库中读取 并存入线程参数
+		if params.(map[string]string)["from"]=="样本装载位指定位置"{
+			rm,err:=GetResourceManager()
+			if err != nil {
+				return err
+			}
+			fromparam,err:=rm.getIdbyNameFromBaseParams("样本装载位指定位置")
+			if err != nil {
+				return err
+			}
+			params.(map[string]string)["from"]=params.(map[string]string)["from"]+strconv.Itoa(fromparam)
+
+			saveParamsbyIdToThread(threadId,params)
+
+		}
+
+
+	}
+
+	if actionName=="DP1MovePipe()"{
+		fmt.Println(readParamsbyIdFromThread(threadId))
+		//逻辑有点怪 如果是这个参数 就需要从线程记录中读取
+		if params.(map[string]string)["to"]=="样本装载位指定位置"{
+			params.(map[string]string)["to"]= readParamsbyIdFromThread(threadId).(map[string]string)["from"]
+		}
+
+	}
+
+
 
 	color.Set(color.FgHiCyan)
 	fmt.Println(threadId,"动作开始:",actionName,actionNameZH,params)
@@ -297,10 +339,23 @@ func executeAction(threadId string,actionName string,actionNameZH string,params 
 	color.Set(color.FgHiMagenta)
 	fmt.Println(threadId,"动作执行完毕!",actionName)
 	color.Unset()
+
+	return nil
 }
 
 //耗时统计
 func timeCost(start time.Time){
 	tc:=time.Since(start)
 	fmt.Printf("动作耗时 = %v\n", tc)
+}
+
+func saveParamsbyIdToThread(threadid string,params interface{}){
+	_threadTable[threadid].threadParams=params
+	fmt.Println("存入",params)
+
+}
+
+func readParamsbyIdFromThread(threadid string)interface{}{
+	fmt.Println("读出",_threadTable[threadid].threadParams)
+	return _threadTable[threadid].threadParams
 }
