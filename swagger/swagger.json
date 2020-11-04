@@ -1,0 +1,104 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "contact": {}
+    },
+    "basePath": "/v1",
+    "paths": {
+        "/GP/SetResourceSample/": {
+            "post": {
+                "tags": [
+                    "GP"
+                ],
+                "description": "设置原始样品试管内容",
+                "operationId": "UserInterfaceController.SetResourceSample",
+                "parameters": [
+                    {
+                        "in": "body",
+                        "name": "body",
+                        "description": "SetResourceSample",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/body"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "403": {
+                        "description": "no"
+                    }
+                }
+            }
+        },
+        "/GP/StartMultipleThreads/": {
+            "get": {
+                "tags": [
+                    "GP"
+                ],
+                "description": "开始多条线程 输入线程数量 和线程开始时间间隔 将自动开始 直到全部线程完成后 调用结束",
+                "operationId": "UserInterfaceController.StartMultipleThreads",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "numOfThread",
+                        "description": "something",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    {
+                        "in": "query",
+                        "name": "interval",
+                        "description": "something",
+                        "required": true,
+                        "type": "integer",
+                        "format": "int64"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "403": {
+                        "description": "no"
+                    }
+                }
+            }
+        },
+        "/GP/startSingleThread/": {
+            "get": {
+                "tags": [
+                    "GP"
+                ],
+                "description": "输入线程号 开始单线程",
+                "operationId": "UserInterfaceController.startSingleThread",
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "threadId",
+                        "description": "something",
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "403": {
+                        "description": "no"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "body": {
+            "title": "body",
+            "type": "object"
+        }
+    }
+}

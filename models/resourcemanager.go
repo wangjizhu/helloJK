@@ -397,3 +397,12 @@ func (r *ResourceManager)getIdbyNameFromBaseParams(paramname string)(int,error){
 
 	return -1,errors.New(paramname+"is empty!")
 }
+
+func SetResourceSample(s []int)error{
+	r,err:=GetResourceManager()
+	if err != nil {
+		return err
+	}
+	r.baseParams["样本装载位指定位置"]=s
+	return nil
+}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"sync"
 	"time"
 	"github.com/fatih/color"
 )
@@ -67,7 +68,7 @@ func (th* threadDescriptor) getIdbyNameFromThread(resourcename string) (int,erro
 }
 
 var  _threadTable map[string] *threadDescriptor
-
+var wg sync.WaitGroup
 
 //资源这一步是否需要申请和释放
 type resourceApplyAndReturn struct {
@@ -81,20 +82,26 @@ func init(){
 
 	fmt.Println("threadmanager 初始化完成")
 
-	for i:=1;i<=Num_of_Threads;i++{
-		go func() {
-			err := StartThread(fmt.Sprintf("%d%d%d",i,i,i))
-			if err != nil {
-				panic(err)
-			}
-		}()
-		time.Sleep(80*time.Second)
-	}
 
 }
 
 
-
+//要全部线程都完成才返回
+func StartMultipleThreads(numberOfThreads int,interval int)error{
+	wg.Add(numberOfThreads)
+	for i:=1;i<=numberOfThreads;i++{
+		go func() {
+			defer wg.Done()
+			err := StartSingleThread(fmt.Sprintf("%d%d%d",i,i,i))
+			if err != nil {
+				panic(err)
+			}
+		}()
+		time.Sleep(time.Duration(interval)*time.Second)
+	}
+	wg.Wait()
+	return nil
+}
 
 
 
@@ -103,8 +110,13 @@ func init(){
 //在任何时候,开始一条线程,并开始执行
 //调用一次开启一个线程往下走
 
-func StartThread(threadId string)error{
+func StartSingleThread(threadId string)error{
 
+	//此线程已经在运行了 报错
+
+	if _, ok := _threadTable[threadId]; ok {
+		return errors.New("线程已经在运行中!")
+	}
 	//线程启动 注册到threadmap
 	_threadTable[threadId]=NewThreadDescriptor(threadId)
 
