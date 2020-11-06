@@ -36,10 +36,10 @@ type WebSocketController struct {
 
 // Join method handles WebSocket requests for WebSocketController.
 func (this *WebSocketController) Join() {
-	fmt.Println("aaa")
+	fmt.Println("Thread ws链接成功")
 
 	//关闭已有的
-	defer models.CloseWs()
+	defer models.CloseWsThread()
 
 	// Upgrade from http request to WebSocket.
 	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
@@ -52,7 +52,7 @@ func (this *WebSocketController) Join() {
 	}
 
 	//记录下新的
-	models.SetWs(ws)
+	models.SetWsThread(ws)
 
 	//检测链接错误使用 若无法读取 则断开ws
 	for {
@@ -63,22 +63,7 @@ func (this *WebSocketController) Join() {
 
 	}
 
-	//go func() {
-	//
-	//	for  {
-	//
-	//		models.SendMessage(models.Message{
-	//			ThreadName:  "xxx",
-	//			Resources:   nil,
-	//			CurrentStep: models.Step{
-	//				StepName:   "aaa",
-	//				StepParams: nil,
-	//			},
-	//		})
-	//		time.Sleep(2*time.Second)
-	//
-	//	}
-	//}()
+
 
 
 
@@ -86,3 +71,36 @@ func (this *WebSocketController) Join() {
 
 
 
+
+func (this *WebSocketController) ResourceStatus() {
+	fmt.Println("Resource ws链接成功")
+
+	//关闭已有的
+	defer models.CloseWsResource()
+
+	// Upgrade from http request to WebSocket.
+	ws, err := websocket.Upgrade(this.Ctx.ResponseWriter, this.Ctx.Request, nil, 1024, 1024)
+	if _, ok := err.(websocket.HandshakeError); ok {
+		http.Error(this.Ctx.ResponseWriter, "Not a websocket handshake", 400)
+		return
+	} else if err != nil {
+		beego.Error("Cannot setup WebSocket connection:", err)
+		return
+	}
+
+	//记录下新的
+	models.SetWsResource(ws)
+
+	//检测链接错误使用 若无法读取 则断开ws
+	for {
+		_, _, err := ws.ReadMessage()
+		if err != nil {
+			return
+		}
+
+	}
+
+
+
+
+}

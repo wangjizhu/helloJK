@@ -3,11 +3,11 @@ package models
 import (
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	"math/rand"
 	"strconv"
 	"sync"
 	"time"
-	"github.com/fatih/color"
 )
 
 
@@ -345,9 +345,9 @@ func executeAction(threadId string,currentStepNum string,actionName string,actio
 
 
 
-	_=SendMessage(Message{
-		ThreadName:  threadId,
-		Resources:   MakeMessageResource(_threadTable[threadId].threadResources),
+	_= SendMessageThread(MessageThread{
+		ThreadName: threadId,
+		Resources:  MakeMessageResourceFromResourceSet(_threadTable[threadId].threadResources),
 		CurrentStep: Step{
 			StepDescription: "Start",
 			StepOrderNum: currentStepNum,
@@ -365,9 +365,9 @@ func executeAction(threadId string,currentStepNum string,actionName string,actio
 	fmt.Println(threadId,"动作执行完毕!",actionName)
 	color.Unset()
 
-	_=SendMessage(Message{
-		ThreadName:  threadId,
-		Resources:   MakeMessageResource(_threadTable[threadId].threadResources),
+	_= SendMessageThread(MessageThread{
+		ThreadName: threadId,
+		Resources:  MakeMessageResourceFromResourceSet(_threadTable[threadId].threadResources),
 		CurrentStep: Step{
 			StepDescription: "Finish",
 			StepOrderNum: currentStepNum,
@@ -375,9 +375,6 @@ func executeAction(threadId string,currentStepNum string,actionName string,actio
 			StepParams: params,
 		},
 	})
-
-
-
 
 	return nil
 }
@@ -399,10 +396,31 @@ func readParamsbyIdFromThread(threadid string)interface{}{
 	return _threadTable[threadid].threadParams
 }
 
-func MakeMessageResource(set ResourceSet)[]string{
-	var r []string
+func MakeMessageResourceFromResourceSet(set ResourceSet)[]ResourceMessageType{
+	var r []ResourceMessageType
 	for _,value:=range set{
-		r = append(r, value.ResourceName+":"+strconv.Itoa(value.ResourceId))
+		rm:=ResourceMessageType{
+			ResourceName:  value.ResourceName,
+			ResourceValue: strconv.Itoa(value.ResourceId),
+		}
+		r = append(r, rm)
 	}
+	return r
+}
+func MakeMessageResourceFromResourceMap(sm map[string]ResourceSet)[]ResourceMessageType{
+	var r []ResourceMessageType
+	//map访问 每次都乱序！！！！！！！！！
+	for key,set:=range sm{
+		amount:=0
+		for _,_=range set{
+			amount++
+		}
+		rm:=ResourceMessageType{
+			ResourceName:  key,
+			ResourceValue: strconv.Itoa(amount),
+		}
+		r = append(r, rm)
+	}
+
 	return r
 }

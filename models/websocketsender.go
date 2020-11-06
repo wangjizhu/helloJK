@@ -6,6 +6,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type ResourceMessageType struct {
+	ResourceName string
+	ResourceValue string
+}
+
+
 
 type Step struct {
 	StepDescription string
@@ -15,40 +21,42 @@ type Step struct {
 }
 
 
-type Message struct {
+type MessageThread struct {
 	ThreadName string
-	Resources []string
+	Resources []ResourceMessageType
 	CurrentStep Step
 }
 
+type MessageResource []ResourceMessageType
 
 
+var _wsThread *websocket.Conn
+var _wsResource *websocket.Conn
 
-var _ws *websocket.Conn
-
-
+//var _wsThreadSendBuffer chan MessageThread
+//var _wsResourceSendBuffer chan MessageResource
 
 //链接一次 记下来
-func SetWs(ws *websocket.Conn){
-	_ws=ws
+func SetWsThread(ws *websocket.Conn){
+	_wsThread =ws
 }
-func GetWs()*websocket.Conn{
-	return _ws
+func GetWsThread()*websocket.Conn{
+	return _wsThread
 }
 
-func CloseWs(){
-	if _ws!=nil{
-		_ws.Close()
+func CloseWsThread(){
+	if _wsThread !=nil{
+		_wsThread.Close()
 		fmt.Println("已经关闭当前ws")
 	}
 }
 
-func SendMessage(m Message)error{
+func SendMessageThread(m MessageThread)error{
 	data,err:=json.Marshal(&m)
 	if err!=nil{
 		panic(err)
 	}
-	if err=_ws.WriteMessage(websocket.TextMessage, data);err!= nil {
+	if err= _wsThread.WriteMessage(websocket.TextMessage, data);err!= nil {
 		// User disconnected.
 		return err
 	}
@@ -56,7 +64,30 @@ func SendMessage(m Message)error{
 	return nil
 }
 
+
+//链接一次 记下来
+func SetWsResource(ws *websocket.Conn){
+	_wsResource =ws
+}
+func GetWsResource()*websocket.Conn{
+	return _wsResource
+}
+
+func CloseWsResource(){
+	if _wsResource !=nil{
+		_wsResource.Close()
+		fmt.Println("已经关闭当前ws")
+	}
+}
+
+
+
+
+
 func init(){
+	//_wsThreadSendBuffer:=make(chan MessageThread)
+	//_wsResourceSendBuffer:=make(chan MessageResource)
+
 
 
 }

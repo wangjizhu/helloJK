@@ -8,6 +8,7 @@ import (
 func init() {
 
 	beego.Router("/ws/join", &controllers.WebSocketController{}, "get:Join")
+	beego.Router("/ws/resource", &controllers.WebSocketController{}, "get:ResourceStatus")
 
     beego.Router("/", &controllers.MainController{})
 

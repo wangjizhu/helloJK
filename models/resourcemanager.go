@@ -2,10 +2,12 @@ package models
 
 import (
 	"container/list"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/360EntSecGroup-Skylar/excelize/v2"
 	"github.com/fatih/color"
+	"github.com/gorilla/websocket"
 	"strconv"
 	"sync"
 	"time"
@@ -158,6 +160,20 @@ func (r *ResourceManager)Init()error{
 		}
 
 	}
+
+	//每秒返回资源管理器中资源数量
+	go func() {
+
+		for{
+			fmt.Println(r.resources)
+			err:=SendMessageResource(MakeMessageResourceFromResourceMap(r.resources))
+			if err != nil {
+
+			}
+			time.Sleep(1*time.Second)
+		}
+
+	}()
 
 
 
@@ -406,5 +422,25 @@ func SetResourceSample(s []int)error{
 		return err
 	}
 	r.baseParams["样本装载位指定位置"]=s
+	return nil
+}
+
+
+func SendMessageResource(m MessageResource)error{
+	data,err:=json.Marshal(&m)
+	if err!=nil{
+		panic(err)
+	}
+	ws:=GetWsResource()
+
+	if ws==nil{
+		return errors.New("no _wsResource")
+	}
+
+	if err= ws.WriteMessage(websocket.TextMessage, data);err!= nil {
+		// User disconnected.
+		return err
+	}
+
 	return nil
 }
