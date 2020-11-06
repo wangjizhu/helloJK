@@ -5,6 +5,23 @@
     },
     "basePath": "/v1",
     "paths": {
+        "/GP/GetLengthOfThread/": {
+            "get": {
+                "tags": [
+                    "GP"
+                ],
+                "description": "获取线程总长度",
+                "operationId": "UserInterfaceController.GetLengthOfThread",
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "403": {
+                        "description": "no"
+                    }
+                }
+            }
+        },
         "/GP/SetResourceSample/": {
             "post": {
                 "tags": [
@@ -52,7 +69,7 @@
                     {
                         "in": "query",
                         "name": "interval",
-                        "description": "something",
+                        "description": "\u003e=80",
                         "required": true,
                         "type": "integer",
                         "format": "int64"
@@ -68,7 +85,7 @@
                 }
             }
         },
-        "/GP/startSingleThread/": {
+        "/GP/StartSingleThread/": {
             "get": {
                 "tags": [
                     "GP"

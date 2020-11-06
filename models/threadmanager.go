@@ -221,7 +221,7 @@ func StartSingleThread(threadId string)error{
 			return err
 		}
 
-		err=executeAction(threadId,rows[i][1],rows[i][2],params,duration)
+		err=executeAction(threadId,rows[i][0],rows[i][1],rows[i][2],params,duration)
 		if err != nil {
 			return err
 		}
@@ -303,7 +303,7 @@ func getIdbyNameFromApplyResult(resourcename string,applyresult ResourceSet) (in
 
 
 //模拟动作执行
-func executeAction(threadId string,actionName string,actionNameZH string,params interface{},duration float64)error{
+func executeAction(threadId string,currentStepNum string,actionName string,actionNameZH string,params interface{},duration float64)error{
 
 	defer timeCost(time.Now())
 
@@ -340,8 +340,21 @@ func executeAction(threadId string,actionName string,actionNameZH string,params 
 
 
 	color.Set(color.FgHiCyan)
-	fmt.Println(threadId,"动作开始:",actionName,actionNameZH,params)
+	fmt.Println(threadId,"动作开始:",currentStepNum,actionName,actionNameZH,params)
 	color.Unset()
+
+
+
+	_=SendMessage(Message{
+		ThreadName:  threadId,
+		Resources:   MakeMessageResource(_threadTable[threadId].threadResources),
+		CurrentStep: Step{
+			StepDescription: "Start",
+			StepOrderNum: currentStepNum,
+			StepName:   actionName,
+			StepParams: params,
+		},
+	})
 
 	rand.Seed(time.Now().UnixNano())
 	//执行时间自己的时间加上可能的0%-20%往上浮动
@@ -351,6 +364,20 @@ func executeAction(threadId string,actionName string,actionNameZH string,params 
 	color.Set(color.FgHiMagenta)
 	fmt.Println(threadId,"动作执行完毕!",actionName)
 	color.Unset()
+
+	_=SendMessage(Message{
+		ThreadName:  threadId,
+		Resources:   MakeMessageResource(_threadTable[threadId].threadResources),
+		CurrentStep: Step{
+			StepDescription: "Finish",
+			StepOrderNum: currentStepNum,
+			StepName:   actionName,
+			StepParams: params,
+		},
+	})
+
+
+
 
 	return nil
 }
@@ -370,4 +397,12 @@ func saveParamsbyIdToThread(threadid string,params interface{}){
 func readParamsbyIdFromThread(threadid string)interface{}{
 	fmt.Println("读出",_threadTable[threadid].threadParams)
 	return _threadTable[threadid].threadParams
+}
+
+func MakeMessageResource(set ResourceSet)[]string{
+	var r []string
+	for _,value:=range set{
+		r = append(r, value.ResourceName+":"+strconv.Itoa(value.ResourceId))
+	}
+	return r
 }

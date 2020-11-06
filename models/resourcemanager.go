@@ -18,6 +18,7 @@ import (
 var _r * ResourceManager
 var _f *excelize.File
 var rows [][]string
+var LengthOfRows int
 
 
 func init(){
@@ -33,7 +34,8 @@ func init(){
 		panic(err)
 	}
 
-	fmt.Println(len(rows))
+	LengthOfRows=len(rows)
+	fmt.Println(LengthOfRows)
 
 	_r=NewResourceManager()
 	err=_r.Init()

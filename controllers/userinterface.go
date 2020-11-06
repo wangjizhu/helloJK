@@ -46,7 +46,7 @@ func (u *UserInterfaceController) SetResourceSample(){
 // @Param	threadId	query   string	 true "something"
 // @Success 200 ok
 // @Failure 403 no
-// @router /startSingleThread/ [get]
+// @router /StartSingleThread/ [get]
 func (u *UserInterfaceController) StartSingleThread(){
 	threadId:=u.GetString("threadId")
 
@@ -66,7 +66,7 @@ func (u *UserInterfaceController) StartSingleThread(){
 // @Title StartMultipleThreads
 // @Description 开始多条线程 输入线程数量 和线程开始时间间隔 将自动开始 直到全部线程完成后 调用结束
 // @Param	numOfThread	query   int	 true "something"
-// @Param	interval	query   int	 true "something"
+// @Param	interval	query   int	 true ">=80"
 // @Success 200 ok
 // @Failure 403 no
 // @router /StartMultipleThreads/ [get]
@@ -86,6 +86,7 @@ func (u *UserInterfaceController) StartMultipleThreads(){
 		return
 	}
 
+
 	err=models.StartMultipleThreads(numOfThread,interval)
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
@@ -95,6 +96,17 @@ func (u *UserInterfaceController) StartMultipleThreads(){
 	}
 
 	u.Data["json"]="ok"
+	u.ServeJSON()
+	return
+}
+
+// @Title GetLengthOfThread
+// @Description 获取线程总长度
+// @Success 200 ok
+// @Failure 403 no
+// @router /GetLengthOfThread/ [get]
+func (u *UserInterfaceController) GetLengthOfThread(){
+	u.Data["json"]=models.LengthOfRows
 	u.ServeJSON()
 	return
 }

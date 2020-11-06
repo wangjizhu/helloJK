@@ -6,6 +6,9 @@ import (
 )
 
 func init() {
+
+	beego.Router("/ws/join", &controllers.WebSocketController{}, "get:Join")
+
     beego.Router("/", &controllers.MainController{})
 
 	ns1 := beego.NewNamespace("/v1",
