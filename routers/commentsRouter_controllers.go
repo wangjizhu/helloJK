@@ -9,8 +9,26 @@ func init() {
 
     beego.GlobalControllerRouter["helloprecision/controllers:UserInterfaceController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:UserInterfaceController"],
         beego.ControllerComments{
+            Method: "BorrowSampleShelf",
+            Router: `/BorrowSampleShelf/`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["helloprecision/controllers:UserInterfaceController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:UserInterfaceController"],
+        beego.ControllerComments{
             Method: "GetLengthOfThread",
             Router: `/GetLengthOfThread/`,
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
+    beego.GlobalControllerRouter["helloprecision/controllers:UserInterfaceController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:UserInterfaceController"],
+        beego.ControllerComments{
+            Method: "ReturnSampleShelf",
+            Router: `/ReturnSampleShelf/`,
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,

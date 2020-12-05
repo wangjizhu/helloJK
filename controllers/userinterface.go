@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego"
 	"helloprecision/models"
 	"net/http"
@@ -18,8 +19,11 @@ type UserInterfaceController struct {
 // @Failure 403 no
 // @router /SetResourceSample/ [post]
 func (u *UserInterfaceController) SetResourceSample(){
+	fmt.Println("aaaaaaa")
+
 	var s []int
 	err:=json.Unmarshal(u.Ctx.Input.RequestBody, &s)
+	fmt.Println(s)
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusBadRequest)
 		u.Data["json"]=err.Error()
@@ -107,6 +111,82 @@ func (u *UserInterfaceController) StartMultipleThreads(){
 // @router /GetLengthOfThread/ [get]
 func (u *UserInterfaceController) GetLengthOfThread(){
 	u.Data["json"]=models.LengthOfRows
+	u.ServeJSON()
+	return
+}
+
+
+// @Title BorrowSampleShelf
+// @Description BorrowSampleShelf
+// @Success 200 ok
+// @Failure 403 no
+// @router /BorrowSampleShelf/ [get]
+func (u *UserInterfaceController) BorrowSampleShelf(){
+	applyresources:=models.ResourceSet{}
+	applyresources=append(applyresources,models.ResourceDescriptor{
+		Status:              0,
+		Enable:              false,
+		ResourceName:        "SampleShelf",
+		ResourceId:          0,
+		ResourceDescription: "",
+	})
+
+	resourcemanager,err:=models.GetResourceManager()
+	if err != nil {
+		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
+		u.Data["json"]=err.Error()
+		u.ServeJSON()
+		return
+	}
+
+	_,err=resourcemanager.ApplyResource("",applyresources)
+
+
+	if err != nil {
+		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
+		u.Data["json"]=err.Error()
+		u.ServeJSON()
+		return
+	}
+
+	u.Data["json"]="ok"
+	u.ServeJSON()
+	return
+}
+
+// @Title ReturnSampleShelf
+// @Description ReturnSampleShelf
+// @Success 200 ok
+// @Failure 403 no
+// @router /ReturnSampleShelf/ [get]
+func (u *UserInterfaceController) ReturnSampleShelf(){
+	applyresources:=models.ResourceSet{}
+	applyresources=append(applyresources,models.ResourceDescriptor{
+		Status:              0,
+		Enable:              false,
+		ResourceName:        "SampleShelf",
+		ResourceId:          0,
+		ResourceDescription: "",
+	})
+
+	resourcemanager,err:=models.GetResourceManager()
+	if err != nil {
+		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
+		u.Data["json"]=err.Error()
+		u.ServeJSON()
+		return
+	}
+
+	err=resourcemanager.ReturnResource("user",applyresources)
+
+	if err != nil {
+		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
+		u.Data["json"]=err.Error()
+		u.ServeJSON()
+		return
+	}
+
+	u.Data["json"]="ok"
 	u.ServeJSON()
 	return
 }

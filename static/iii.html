@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>GP模拟器</title>
+
+    <!-- import CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- import Vue before Element -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <!--    import axios-->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <!--    import fontclass-->
+    <link rel="stylesheet" href="./iconfont.css">
+    <!-- 引入状态机
+    <script src="https://cdn.bootcdn.net/ajax/libs/vuex/0.4.1/vuex.min.js"></script> -->
+    <style>
+        .el-row {
+            margin-bottom: 5px;
+        }
+        
+        .el-row .last-child {
+            margin-bottom: 0;
+        }
+        
+        .el-col {
+            border-radius: 10px;
+        }
+        
+        .bg-purple-dark {
+            background: #99a9bf;
+        }
+        
+        .grid-content {
+            border-radius: 10px;
+            min-height: 36px;
+        }
+        
+        .row-bg {
+            padding: 10px 0;
+            background-color: #f9fafc;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!--标题行-->
+        <el-row>
+            <el-col :span="24" style="text-align: center">
+                <div class="grid-content bg-purple-dark">
+                    <h1>GP模拟器</h1>
+                </div>
+            </el-col>
+        </el-row>
+        <!--内容-->
+        <el-row>
+            <el-col :span="6">
+                <div>
+                    <el-row>
+                        <el-col :span="24" class="grid-content bg-purple-dark" style="height: 600px;overflow:auto">
+                            <div>
+                                <p style="text-align: center;font-size: 20px"><b>样本架</b></p>
+
+                                <el-row style="text-align: center">
+                                    <el-col :span="12">
+                                        <el-button @click="setOk" :disabled="bidOk" round>确定</el-button>
+                                    </el-col>
+                                    <el-col :span="12">
+                                        <el-button @click="modify" :disabled="sampleShelf==0" round>添加样品</el-button>
+                                    </el-col>
+                                </el-row>
+                                <el-row>
+                                    <el-col :span="6">
+                                        <el-checkbox :indeterminate="isIndeterminate1" v-model="checkAll1" @change="(val)=>{return handleCheckAllChange(val,1)}">全选</el-checkbox>
+                                        <div style="margin: 15px 0;"></div>
+                                        <el-checkbox-group v-model="checkedSamples1" @change="handleCheckedSamplesChange1">
+                                            <el-checkbox v-for="sample in samples1" :label="sample" :key="sample" style="display:block;">{{sample}}</el-checkbox>
+                                        </el-checkbox-group>
+                                    </el-col>
+
+                                    <el-col :span="6">
+                                        <el-checkbox :indeterminate="isIndeterminate2" v-model="checkAll2" @change="(val)=>{return handleCheckAllChange(val,2)}">全选</el-checkbox>
+                                        <div style="margin: 15px 0;"></div>
+                                        <el-checkbox-group v-model="checkedSamples2" @change="handleCheckedSamplesChange2">
+                                            <el-checkbox v-for="sample in samples2" :label="sample" :key="sample" style="display:block;">{{sample}}</el-checkbox>
+                                        </el-checkbox-group>
+                                    </el-col>
+
+                                    <el-col :span="6">
+                                        <el-checkbox :indeterminate="isIndeterminate3" v-model="checkAll3" @change="(val)=>{return handleCheckAllChange(val,3)}">全选</el-checkbox>
+                                        <div style="margin: 15px 0;"></div>
+                                        <el-checkbox-group v-model="checkedSamples3" @change="handleCheckedSamplesChange3">
+                                            <el-checkbox v-for="sample in samples3" :label="sample" :key="sample" style="display:block;">{{sample}}</el-checkbox>
+                                        </el-checkbox-group>
+                                    </el-col>
+
+                                    <el-col :span="6">
+                                        <el-checkbox :indeterminate="isIndeterminate4" v-model="checkAll4" @change="(val)=>{return handleCheckAllChange(val,4)}">全选</el-checkbox>
+                                        <div style="margin: 15px 0;"></div>
+                                        <el-checkbox-group v-model="checkedSamples4" @change="handleCheckedSamplesChange4">
+                                            <el-checkbox v-for="sample in samples4" :label="sample" :key="sample" style="display:block;">{{sample}}</el-checkbox>
+                                        </el-checkbox-group>
+                                    </el-col>
+                                </el-row>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="24" class="grid-content bg-purple-dark">
+                            <div style="height: 200px;overflow:auto">
+                                <h5 style="text-align: center">资源管理器</h5>
+                                <el-col :span="10">
+                                    DP1:{{dp1Num}}
+                                    <br> DP8:{{dp8Num}}
+                                    <br> DJ_QPCR:{{ djQNum}}
+                                    <br> DJ_Purify:{{djPNum}}
+                                    <br> OSC_Location:{{OSClNum}}
+                                    <br>
+                                </el-col>
+                                <el-col :span="10">
+                                    space_A:{{spaceANum}}
+                                    <br> space_B:{{spaceBNum}}
+                                    <br> space_D:{{spaceDNum}}
+                                    <br> space_E:{{spaceENum}}
+                                    <br>sampleShelf:{{sampleShelf}}
+
+                                </el-col>
+                                <el-col :span="4">
+                                    <el-button style="padding: 10%" circle :disabled="bid1 || bid2 || bid3 || bid4 || bid5 || bid6" @click="bidEvt"><span class="iconfont icon-yunhang"></span></el-button>
+                                </el-col>
+                    </el-row>
+                    </div>
+                    </el-col>
+        </el-row>
+        </div>
+        </el-col>
+        <el-col :span="18">
+            <div>
+                <el-row style="height: 400px;overflow-y:auto">
+                    <el-col :span="8" class="grid-content bg-purple-dark" style="height: 400px">
+                        <p style="text-align: center;height: 30px">
+                            <el-tag type="info">111</el-tag>
+                        </p>
+                        <ul style="overflow-y:auto;height: 85px">
+
+                            <li v-for="resource in thread1Resources" :key="resource.ResourceName"><span>{{resource.ResourceName}}:{{resource.ResourceAmount}}</span></li>
+                        </ul>
+                        <textarea cols="30" rows="15" v-html="thread1Process" style="width: 90%;height:40% ;overflow-x:auto"></textarea>
+                        <el-row style="padding:8px;margin-top: 2px">
+                            <el-col :span="4">
+                                <el-button style="padding: 10%;margin:10px 10px;" circle :disabled="bid1" @click="bid1Evt"><span class="iconfont icon-yunhang"></span></el-button>
+                            </el-col>
+                            <el-col :span="20">
+                                <div style="margin-top: 10px;width: 80%">
+                                    <el-progress :text-inside="true" :stroke-width="24" :percentage="progressData1"></el-progress>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+
+                    <el-col :span="8" class="grid-content bg-purple-dark" style="height: 400px">
+                        <p style="text-align: center;height: 30px">
+                            <el-tag type="info">222</el-tag>
+                        </p>
+                        <ul style="overflow-y:auto;height: 85px">
+                            <li v-for="resource in thread2Resources" :key="resource.ResourceName"><span>{{resource.ResourceName}}:{{resource.ResourceAmount}}</span></li>
+                        </ul>
+                        <textarea cols="30" rows="15" v-html="thread2Process" style="width: 90%;height: 40%;overflow-x:auto"></textarea>
+                        <el-row style="padding:8px;margin-top: 2px">
+                            <el-col :span="4">
+                                <el-button style="padding: 10%;margin:10px 10px;" circle :disabled="bid2" @click="bid2Evt"><span class="iconfont icon-yunhang"></span></el-button>
+                            </el-col>
+                            <el-col :span="20">
+                                <div style="margin-top: 10px;width: 80%">
+                                    <el-progress :text-inside="true" :stroke-width="24" :percentage="progressData2"></el-progress>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+
+                    <el-col :span="8" class="grid-content bg-purple-dark" style="height: 400px">
+                        <p style="text-align: center;height: 30px">
+                            <el-tag type="info">333</el-tag>
+                        </p>
+                        <ul style="overflow-y:auto;height: 85px">
+                            <li v-for="resource in thread3Resources" :key="resource.ResourceName"><span>{{resource.ResourceName}}:{{resource.ResourceAmount}}</span></li>
+                        </ul>
+                        <textarea cols="30" rows="15" v-html="thread3Process" style="width: 90%;height: 40%;overflow-x:auto"></textarea>
+                        <el-row style="padding:8px;margin-top: 2px">
+                            <el-col :span="4">
+                                <el-button style="padding: 10%;margin:10px 10px;" circle :disabled="bid3" @click="bid3Evt"><span class="iconfont icon-yunhang"></span></el-button>
+                            </el-col>
+                            <el-col :span="20">
+                                <div style="margin-top:10px;width: 80%">
+                                    <el-progress :text-inside="true" :stroke-width="24" :percentage="progressData3"></el-progress>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+
+                <el-row style="height: 400px;overflow-y:auto">
+                    <el-col :span="8" class="grid-content bg-purple-dark" style="height: 400px">
+                        <p style="text-align: center;height: 30px">
+                            <el-tag type="info">444</el-tag>
+                        </p>
+                        <ul style="overflow-y:auto;height: 85px">
+                            <li v-for="resource in thread4Resources" :key="resource.ResourceName"><span>{{resource.ResourceName}}:{{resource.ResourceAmount}}</span></li>
+                        </ul>
+                        <textarea cols="30" rows="15" v-html="thread4Process" style="width: 90%;height: 40%;overflow-x:auto"></textarea>
+                        <el-row style="padding:8px;margin-top: 2px">
+                            <el-col :span="4">
+                                <el-button style="padding: 10%;margin:10px 10px;" circle :disabled="bid4" @click="bid4Evt"><span class="iconfont icon-yunhang"></span></el-button>
+                            </el-col>
+                            <el-col :span="20">
+                                <div style="margin-top: 10px;width: 80%">
+                                    <el-progress :text-inside="true" :stroke-width="24" :percentage="progressData4"></el-progress>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+
+                    <el-col :span="8" class="grid-content bg-purple-dark" style="height: 400px">
+                        <p style="text-align: center;height: 30px">
+                            <el-tag type="info">555</el-tag>
+                        </p>
+                        <ul style="overflow-y:auto;height: 85px">
+                            <li v-for="resource in thread5Resources" :key="resource.ResourceName"><span>{{resource.ResourceName}}:{{resource.ResourceAmount}}</span></li>
+                        </ul>
+                        <textarea cols="30" rows="15" v-html="thread5Process" style="width: 90%;height: 40%;overflow-x:auto"></textarea>
+                        <el-row style="padding:8px;margin-top: 2px">
+                            <el-col :span="4">
+                                <el-button style="padding: 10%;margin:10px 10px;" circle :disabled="bid5" @click="bid5Evt"><span class="iconfont icon-yunhang"></span></el-button>
+                            </el-col>
+                            <el-col :span="20">
+                                <div style="margin-top: 10px;width: 80%">
+                                    <el-progress :text-inside="true" :stroke-width="24" :percentage="progressData5"></el-progress>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+
+                    <el-col :span="8" class="grid-content bg-purple-dark" style="height: 400px ">
+                        <p style="text-align: center;height: 30px">
+                            <el-tag type="info">666</el-tag>
+                        </p>
+                        <ul style="overflow-y:auto;height: 85px">
+                            <li v-for="resource in thread6Resources" :key="resource.ResourceName"><span>{{resource.ResourceName}}:{{resource.ResourceAmount}}</span></li>
+                        </ul>
+                        <textarea cols="30" rows="15" v-html="thread6Process" style="width: 90%;height: 40%;overflow-x:auto"></textarea>
+                        <el-row style="padding:8px;margin-top: 2px">
+                            <el-col :span="4">
+                                <el-button style="padding: 10%;margin:10px 10px;" circle :disabled="bid6" @click="bid6Evt"><span class="iconfont icon-yunhang"></span></el-button>
+                            </el-col>
+                            <el-col :span="20">
+                                <div style="margin-top: 10px;width: 80%">
+                                    <el-progress :text-inside="true" :stroke-width="24" :percentage="progressData6"></el-progress>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-col>
+                </el-row>
+            </div>
+        </el-col>
+        </el-row>
+    </div>
+</body>
+<script>
+    // 生成一个从start到end的连续数组
+    function generateArray(start, end) {
+        return Array.from(new Array(end + 1).keys()).slice(start)
+    }
+    const D1sampleOptions = generateArray(1, 27);
+    const E1sampleOptions = generateArray(28, 54);
+    const D2sampleOptions = generateArray(55, 81);
+    const E2sampleOptions = generateArray(82, 108);
+
+
+
+    vm = new Vue({
+        el: '#app',
+        data: function() {
+            return {
+
+                visible: false,
+                states: "empty",
+
+                checkAll1: false,
+                checkAll2: false,
+                checkAll3: false,
+                checkAll4: false,
+
+                checkedSamples: [],
+                checkedSamples1: [],
+                checkedSamples2: [],
+                checkedSamples3: [],
+                checkedSamples4: [],
+
+                samples1: D1sampleOptions,
+                samples2: E1sampleOptions,
+                samples3: D2sampleOptions,
+                samples4: E2sampleOptions,
+
+                isIndeterminate1: false,
+                isIndeterminate2: false,
+                isIndeterminate3: false,
+                isIndeterminate4: false,
+
+                dp1Num: 1,
+                dp8Num: 1,
+                djQNum: 1,
+                djPNum: 1,
+                OSClNum: 5,
+                spaceANum: 1,
+                spaceBNum: 1,
+                spaceDNum: 1,
+                spaceENum: 1,
+
+                //初始为占用；当点击确定样品后归还，0；判断样品架为0且禁用否时添加样品按钮恢复；当点击添加样品后借走，，恢复确定按钮
+                sampleShelf: 0,
+
+                progressData1: 0,
+                progressData2: 0,
+                progressData3: 0,
+                progressData4: 0,
+                progressData5: 0,
+                progressData6: 0,
+
+                lengthOfThreadStep: 0,
+
+                bid1: false,
+                bid2: false,
+                bid3: false,
+                bid4: false,
+                bid5: false,
+                bid6: false,
+                bid: false,
+
+                bidOk: false,
+                // bidModify: true,
+
+                thread1Resources: [],
+                thread1Process: [],
+
+                thread2Resources: [],
+                thread2Process: [],
+
+                thread3Resources: [],
+                thread3Process: [],
+
+                thread4Resources: [],
+                thread4Process: [],
+
+                thread5Resources: [],
+                thread5Process: [],
+
+                thread6Resources: [],
+                thread6Process: [],
+
+            }
+        },
+        mounted() {
+            // 挂载后执行
+            this.getLenOfThread();
+            this.setWebSocketThread();
+            this.setWebSocketResourceManager();
+            this.returnTOBorrowSampleShelf();
+        },
+
+        methods: {
+            returnTOBorrowSampleShelf() {
+                let _this = this;
+                axios.get("http://10.6.3.88:8080/v1/GP/ReturnSampleShelf", {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                        axios.get("http://10.6.3.88:8080/v1/GP/BorrowSampleShelf", {
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            })
+                            .then(function(response) {
+                                console.log(response);
+                            })
+                            .catch(
+                                function(error) {
+                                    console.log(error);
+                                })
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                        })
+                return;
+            },
+            bid1Evt() {
+                // 按下禁用与否
+                this.bid1 = true;
+                this.startSingleThread(111);
+            },
+            bid2Evt() {
+                // 按下禁用与否
+                this.bid2 = true;
+                this.startSingleThread(222);
+            },
+            bid3Evt() {
+                // 按下禁用与否
+                this.bid3 = true;
+                this.startSingleThread(333);
+            },
+            bid4Evt() {
+                // 按下禁用与否
+                this.bid4 = true;
+                this.startSingleThread(444);
+            },
+            bid5Evt() {
+                // 按下禁用与否
+                this.bid5 = true;
+                this.startSingleThread(555);
+            },
+            bid6Evt() {
+                // 按下禁用与否
+                this.bid6 = true;
+                this.startSingleThread(666);
+            },
+            bidEvt() {
+                // 按下禁用与否
+                this.bid1 = true;
+                this.bid2 = true;
+                this.bid3 = true;
+                this.bid4 = true;
+                this.bid5 = true;
+                this.bid6 = true;
+                this.startMultipleThreads();
+            },
+            handleCheckAllChange(val, type) {
+                // 全选控制
+                switch (type) {
+                    case 1:
+                        {
+                            // console.log(val, type);
+                            this.checkedSamples1 = (val ? D1sampleOptions : []);
+                            this.isIndeterminate1 = false;
+                            break
+                        }
+                    case 2:
+                        {
+                            this.checkedSamples2 = (val ? E1sampleOptions : []);
+                            this.isIndeterminate2 = false;
+                            break
+                        }
+                    case 3:
+                        {
+                            this.checkedSamples3 = (val ? D2sampleOptions : []);
+                            this.isIndeterminate3 = false;
+                            break
+                        }
+                    case 4:
+                        {
+                            this.checkedSamples4 = (val ? E2sampleOptions : []);
+                            this.isIndeterminate4 = false;
+                            break
+                        }
+                }
+            },
+            handleCheckedSamplesChange1(value) {
+                // 样品列1有选择样品时
+                this.isIndeterminate1 = true;
+                let checkedCount = value.length;
+                this.checkAll1 = checkedCount === this.samples1.length;
+                this.isIndeterminate1 = checkedCount > 0 && checkedCount < this.samples1.length;
+
+            },
+            handleCheckedSamplesChange2(value) {
+                // 样品列2有选择样品时
+                this.isIndeterminate2 = true;
+                let checkedCount = value.length;
+                this.checkAll2 = checkedCount === this.samples2.length;
+                this.isIndeterminate2 = checkedCount > 0 && checkedCount < this.samples2.length;
+            },
+            handleCheckedSamplesChange3(value) {
+                // 样品列3有选择样品时
+                this.isIndeterminate3 = true;
+                let checkedCount = value.length;
+                this.checkAll3 = checkedCount === this.samples3.length;
+                this.isIndeterminate3 = checkedCount > 0 && checkedCount < this.samples3.length;
+            },
+            handleCheckedSamplesChange4(value) {
+                // 样品列4有选择样品时
+                this.isIndeterminate4 = true;
+                let checkedCount = value.length;
+                this.checkAll4 = checkedCount === this.samples4.length;
+                this.isIndeterminate4 = checkedCount > 0 && checkedCount < this.samples4.length;
+            },
+            modify() {
+                // 切换到空闲状态
+                this.states = "empty";
+                this.bidOk = false;
+                let _this = this;
+                axios.get("http://10.6.3.88:8080/v1/GP/BorrowSampleShelf", {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                        })
+            },
+
+            setOk() {
+
+                // 合并传递被选择的样本；切换到忙碌状态               
+                this.bidOk = true;
+                this.states = "busy";
+                this.checkedSamples = [];
+                this.checkedSamples = (this.checkedSamples1.concat(this.checkedSamples2, this.checkedSamples3, this.checkedSamples4)).sort(function(a, b) {
+                    return a - b
+                });
+                let _this = this;
+                axios.post('http://10.6.3.88:8080/v1/GP/SetResourceSample', _this.checkedSamples, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        _this.checkedSamples1 = [];
+                        _this.checkedSamples2 = [];
+                        _this.checkedSamples3 = [];
+                        _this.checkedSamples4 = [];
+                        console.log(response);
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                            // _this.error(response);
+                        })
+                axios.get("http://10.6.3.88:8080/v1/GP/ReturnSampleShelf", {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        console.log(response);
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                        })
+            },
+            getLenOfThread() {
+                // 得到线程的总长度
+                let _this = this;
+                axios.get("http://10.6.3.88:8080/v1/GP/GetLengthOfThread", {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        // console.log(response);
+                        _this.lengthOfThreadStep = response.data
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                        })
+            },
+            startSingleThread(threadNum) {
+                // 选择线程号，开始单线程
+                let _this = this;
+                axios.get("http://10.6.3.88:8080/v1/GP/StartSingleThread/?threadId=" + threadNum, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        switch (threadNum) {
+                            case 111:
+                                {
+                                    _this.bid1 = false;
+                                    break
+                                }
+                            case 222:
+                                {
+                                    _this.bid2 = false;
+                                    break
+                                }
+                            case 333:
+                                {
+                                    _this.bid3 = false;
+                                    break
+                                }
+                            case 444:
+                                {
+                                    _this.bid4 = false;
+                                    break
+                                }
+                            case 555:
+                                {
+                                    _this.bid5 = false;
+                                    break
+                                }
+                            case 666:
+                                {
+                                    _this.bid6 = false;
+                                    break
+                                }
+                        };
+                        console.log(response);
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                        })
+                return;
+            },
+            startMultipleThreads() {
+                // 开始6个线程，间隔80秒
+                let _this = this;
+                axios.get("http://10.6.3.88:8080/v1/GP/StartMultipleThreads/?numOfThread=6&interval=80", {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(function(response) {
+                        _this.bid = false;
+                        _this.bid1 = false;
+                        _this.bid2 = false;
+                        _this.bid3 = false;
+                        _this.bid4 = false;
+                        _this.bid5 = false;
+                        _this.bid6 = false;
+                        console.log(response);
+                    })
+                    .catch(
+                        function(error) {
+                            console.log(error);
+                            // _this.error(response);
+                        })
+                return;
+            },
+            selectParamsDisplay(params) {
+                // console.log(params);
+                var setParams = ";\n StepParams:";
+                for (let key in params) {
+                    if (params[key] != "") {
+                        setParams += key + ":" + params[key] + ",";
+                    }
+                }
+                // console.log(setParams);
+                return setParams
+            },
+            setWebSocketThread() {
+                // 建立线程ws，获取每个线程占有资源和进程
+                // 打开一个 web socket
+                var wsThread = new WebSocket("ws://10.6.3.88:8080/ws/join");
+                wsThread.onopen = function() {
+                    // Web Socket 已连接上，使用 send() 方法发送数据
+                    // setInterval(ws.send("0"),1000);
+                    // alert("数据发送中...");
+                };
+
+                let _this = this;
+                wsThread.onmessage = function(evt) {
+                    // r=JSON.parse(evt.data);
+                    var r = eval('(' + evt.data + ')');
+
+                    // console.log(r);
+                    if (r.CurrentStep.StepDescription == 'Start') {
+                        switch (parseInt(r.ThreadName)) {
+
+                            case 111:
+                                {
+                                    _this.thread1Resources = r.Resources;
+                                    _this.thread1Process.unshift('StepOrderNum:' + r.CurrentStep.StepOrderNum + '; \nStepName:' + r.CurrentStep.StepName + _this.selectParamsDisplay(r.CurrentStep.StepParams));
+                                    // _this.thread1Process . unshift('StepName:' + r.CurrentStep.StepName + '; StepOrderNum:' +  r.CurrentStep.StepOrderNum +'; StepParams:' + r.CurrentStep.StepParams) ;
+                                    _this.progressData1 = parseInt((r.CurrentStep.StepOrderNum / (_this.lengthOfThreadStep - 4)) * 100);
+                                    break
+                                }
+                            case 222:
+                                {
+                                    _this.thread2Resources = r.Resources;
+                                    _this.thread2Process.unshift('StepOrderNum:' + r.CurrentStep.StepOrderNum + '; \nStepName:' + r.CurrentStep.StepName + _this.selectParamsDisplay(r.CurrentStep.StepParams));
+                                    _this.progressData2 = parseInt((r.CurrentStep.StepOrderNum / (_this.lengthOfThreadStep - 4)) * 100);
+                                    break
+                                }
+                            case 333:
+                                {
+
+                                    _this.thread3Resources = r.Resources;
+                                    _this.thread3Process.unshift('StepOrderNum:' + r.CurrentStep.StepOrderNum + ';\n StepName:' + r.CurrentStep.StepName + _this.selectParamsDisplay(r.CurrentStep.StepParams));
+                                    _this.progressData3 = parseInt((r.CurrentStep.StepOrderNum / (_this.lengthOfThreadStep - 4)) * 100);
+                                    break
+                                }
+                            case 444:
+                                {
+
+                                    _this.thread4Resources = r.Resources;
+                                    _this.thread4Process.unshift('StepOrderNum:' + r.CurrentStep.StepOrderNum + '; \nStepName:' + r.CurrentStep.StepName + _this.selectParamsDisplay(r.CurrentStep.StepParams));
+                                    _this.progressData4 = parseInt((r.CurrentStep.StepOrderNum / (_this.lengthOfThreadStep - 4)) * 100);
+                                    break
+                                }
+                            case 555:
+                                {
+                                    _this.thread5Resources = r.Resources;
+                                    _this.thread5Process.unshift('StepOrderNum:' + r.CurrentStep.StepOrderNum + '; \nStepName:' + r.CurrentStep.StepName + _this.selectParamsDisplay(r.CurrentStep.StepParams));
+                                    _this.progressData5 = parseInt((r.CurrentStep.StepOrderNum / (_this.lengthOfThreadStep - 4)) * 100);
+                                    break
+                                }
+                            case 666:
+                                {
+                                    _this.thread6Resources = r.Resources;
+                                    _this.thread6Process.unshift('StepOrderNum:' + r.CurrentStep.StepOrderNum + '; \nStepName:' + r.CurrentStep.StepName + _this.selectParamsDisplay(r.CurrentStep.StepParams));
+                                    _this.progressData6 = parseInt((r.CurrentStep.StepOrderNum / (_this.lengthOfThreadStep - 4)) * 100);
+                                    break
+                                }
+                        };
+                    }
+                };
+                wsThread.onclose = function() {
+                    // 关闭 websocket
+                };
+            },
+
+            setWebSocketResourceManager() {
+                // 建立资源管理ws，判断获取资源的状态，判断进程状态并获得取8个样品步骤的进程并取消勾选状态，样品架的状态
+                // 打开一个 web socket
+                var wsResourceManager = new WebSocket("ws://10.6.3.88:8080/ws/resource");
+                wsResourceManager.onopen = function() {};
+
+                let _this = this;
+                wsResourceManager.onmessage = function(evt) {
+                    // var received_msg = evt.data;
+                    var r_msg = eval('(' + evt.data + ')');
+
+                    var j;
+                    for (k = 0; k < r_msg.length; k++) {
+                        if (r_msg[k].ResourceName == "DP1") {
+                            _this.dp1Num = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "DP8") {
+                            _this.dp8Num = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "DJ_QPCR") {
+                            _this.djQNum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "DJ_purify") {
+                            _this.djPNum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "OSC_location") {
+                            _this.OSClNum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "space_A") {
+                            _this.spaceANum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "space_B") {
+                            _this.spaceBNum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "space_D") {
+                            _this.spaceDNum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "space_E") {
+                            _this.spaceENum = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "SampleShelf") {
+                            _this.sampleShelf = r_msg[k].ResourceAmount;
+                        } else if (r_msg[k].ResourceName == "样本装载位指定位置") {
+                            j = k;
+                        }
+                    }
+
+                    if (_this.states == "busy") {
+                        _this.checkedSamples1 = [];
+                        _this.checkedSamples2 = [];
+                        _this.checkedSamples3 = [];
+                        _this.checkedSamples4 = [];
+
+                        for (i = 0; i <= r_msg[j].ResourceAmount.length; i++) {
+                            // console.log(r_msg[9].ResourceValue[i], 111)
+
+                            switch (true) {
+                                case r_msg[j].ResourceAmount[i] >= 1 && r_msg[j].ResourceAmount[i] <= 27:
+                                    {
+                                        _this.checkedSamples1.push(r_msg[j].ResourceAmount[i]);
+                                        break;
+                                    }
+                                case r_msg[j].ResourceAmount[i] >= 28 && r_msg[j].ResourceAmount[i] <= 54:
+                                    {
+                                        _this.checkedSamples2.push(r_msg[j].ResourceAmount[i]);
+                                        break;
+                                    }
+                                case r_msg[j].ResourceAmount[i] >= 55 && r_msg[j].ResourceAmount[i] <= 81:
+                                    {
+                                        _this.checkedSamples3.push(r_msg[j].ResourceAmount[i]);
+                                        break;
+                                    }
+                                case r_msg[j].ResourceAmount[i] >= 82 && r_msg[j].ResourceAmount[i] <= 108:
+                                    {
+                                        _this.checkedSamples4.push(r_msg[j].ResourceAmount[i]);
+                                        break;
+                                    }
+                            }
+                            _this.isIndeterminate1 = (_this.checkedSamples1.length == 0 ? false : true);
+                            _this.isIndeterminate2 = (_this.checkedSamples2.length == 0 ? false : true);
+                            _this.isIndeterminate3 = (_this.checkedSamples3.length == 0 ? false : true);
+                            _this.isIndeterminate4 = (_this.checkedSamples4.length == 0 ? false : true);
+                        }
+                    }
+                };
+                wsResourceManager.onclose = function() {
+                    // 关闭 websocket
+                };
+            },
+        }
+    })
+</script>
+
+</html>

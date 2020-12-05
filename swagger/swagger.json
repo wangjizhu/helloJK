@@ -5,6 +5,23 @@
     },
     "basePath": "/v1",
     "paths": {
+        "/GP/BorrowSampleShelf/": {
+            "get": {
+                "tags": [
+                    "GP"
+                ],
+                "description": "BorrowSampleShelf",
+                "operationId": "UserInterfaceController.BorrowSampleShelf",
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "403": {
+                        "description": "no"
+                    }
+                }
+            }
+        },
         "/GP/GetLengthOfThread/": {
             "get": {
                 "tags": [
@@ -12,6 +29,23 @@
                 ],
                 "description": "获取线程总长度",
                 "operationId": "UserInterfaceController.GetLengthOfThread",
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "403": {
+                        "description": "no"
+                    }
+                }
+            }
+        },
+        "/GP/ReturnSampleShelf/": {
+            "get": {
+                "tags": [
+                    "GP"
+                ],
+                "description": "ReturnSampleShelf",
+                "operationId": "UserInterfaceController.ReturnSampleShelf",
                 "responses": {
                     "200": {
                         "description": "ok"

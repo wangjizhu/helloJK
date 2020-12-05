@@ -2,13 +2,15 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gorilla/websocket"
+	"sync"
 )
 
 type ResourceMessageType struct {
-	ResourceName string
-	ResourceValue string
+	ResourceName   string
+	ResourceAmount interface{}
 }
 
 
@@ -32,6 +34,7 @@ type MessageResource []ResourceMessageType
 
 var _wsThread *websocket.Conn
 var _wsResource *websocket.Conn
+var _wsLock sync.Mutex
 
 //var _wsThreadSendBuffer chan MessageThread
 //var _wsResourceSendBuffer chan MessageResource
@@ -56,10 +59,20 @@ func SendMessageThread(m MessageThread)error{
 	if err!=nil{
 		panic(err)
 	}
+
+	if _wsThread==nil{
+		return errors.New("no _wsThread")
+	}
+
+	//并发发送会带来问题 故需要枷锁来解决
+
+	_wsLock.Lock()
+
 	if err= _wsThread.WriteMessage(websocket.TextMessage, data);err!= nil {
 		// User disconnected.
 		return err
 	}
+	_wsLock.Unlock()
 
 	return nil
 }

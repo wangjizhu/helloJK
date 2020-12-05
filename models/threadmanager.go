@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	"math/rand"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -138,7 +139,7 @@ func StartSingleThread(threadId string)error{
 
 		//读入行资源
 		var resourceRecord []resourceApplyAndReturn
-		for j:=4;j<=12;j++{
+		for j:=4;j<=13;j++{
 
 
 			rs:=resourceApplyAndReturn{
@@ -168,7 +169,7 @@ func StartSingleThread(threadId string)error{
 
 		//读入行参数
 		params :=make(map[string]string)
-		for j:=14;j<=23;j++{
+		for j:=15;j<=24;j++{
 			params[rows[2][j]]=rows[i][j]
 
 		}
@@ -216,7 +217,7 @@ func StartSingleThread(threadId string)error{
 		color.Unset()
 		//2.允许通过后 开始模拟动作 等待时间后执行完成
 
-		duration,err:=strconv.ParseFloat(rows[i][13], 32)
+		duration,err:=strconv.ParseFloat(rows[i][14], 32)
 		if err != nil {
 			return err
 		}
@@ -400,27 +401,49 @@ func MakeMessageResourceFromResourceSet(set ResourceSet)[]ResourceMessageType{
 	var r []ResourceMessageType
 	for _,value:=range set{
 		rm:=ResourceMessageType{
-			ResourceName:  value.ResourceName,
-			ResourceValue: strconv.Itoa(value.ResourceId),
+			ResourceName:   value.ResourceName,
+			ResourceAmount: strconv.Itoa(value.ResourceId),
 		}
 		r = append(r, rm)
 	}
 	return r
 }
-func MakeMessageResourceFromResourceMap(sm map[string]ResourceSet)[]ResourceMessageType{
-	var r []ResourceMessageType
-	//map访问 每次都乱序！！！！！！！！！
-	for key,set:=range sm{
+func MakeMessageResourceFromResourceMap(sm map[string]ResourceSet,samples []int)[]ResourceMessageType{
+	var resourcemessage []ResourceMessageType
+
+	var keys []string
+	for k:=range sm{
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _,k:=range keys{
+		name:=k
+		set:=sm[k]
 		amount:=0
-		for _,_=range set{
-			amount++
+		for _,v:=range set{
+			//如果为true则累加
+			if v.Enable==true{
+				amount++
+			}
+
 		}
 		rm:=ResourceMessageType{
-			ResourceName:  key,
-			ResourceValue: strconv.Itoa(amount),
+			ResourceName:   name,
+			ResourceAmount: strconv.Itoa(amount),
 		}
-		r = append(r, rm)
+		resourcemessage = append(resourcemessage, rm)
+
 	}
 
-	return r
+	//map访问 每次都乱序！！！！！！！！！
+
+	//参数资源的map也添加上去一并返回
+	resourcemessage = append(resourcemessage, ResourceMessageType{
+		ResourceName:   "样本装载位指定位置",
+		ResourceAmount: samples,
+	})
+
+
+	return resourcemessage
 }

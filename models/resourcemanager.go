@@ -135,7 +135,7 @@ func (r *ResourceManager)Init()error{
 	}
 
 
-	for i:=4;i<=12;i++{
+	for i:=4;i<=13;i++{
 		//挂资源名
 		rname:=rows[2][i]
 		r.resources[rname]=ResourceSet{}
@@ -165,8 +165,8 @@ func (r *ResourceManager)Init()error{
 	go func() {
 
 		for{
-			fmt.Println(r.resources)
-			err:=SendMessageResource(MakeMessageResourceFromResourceMap(r.resources))
+			//fmt.Println(r.resources)
+			err:=SendMessageResource(MakeMessageResourceFromResourceMap(r.resources,r.baseParams["样本装载位指定位置"]))
 			if err != nil {
 
 			}
@@ -221,7 +221,7 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 			color.Unset()
 			return getresourceset,nil
 
-		case <-time.After(40 * time.Second):
+		case <-time.After(60 * time.Second):
 			color.Set(color.BgRed,color.FgBlack)
 			fmt.Println("申请等待超时!")
 			fmt.Println(username,resources)
