@@ -13,7 +13,7 @@ func init() {
     beego.Router("/", &controllers.MainController{})
 
 	ns1 := beego.NewNamespace("/v1",
-		beego.NSNamespace("/GP", beego.NSInclude(&controllers.UserInterfaceController{})))
+		beego.NSNamespace("/GP", beego.NSInclude(&controllers.GPController{})))
 
 
 	beego.AddNamespace(ns1)

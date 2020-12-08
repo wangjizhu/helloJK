@@ -285,7 +285,7 @@
         el: '#app',
         data: function() {
             return {
-
+                ip:location.host,
                 visible: false,
                 states: "empty",
 
@@ -374,14 +374,14 @@
         methods: {
             returnTOBorrowSampleShelf() {
                 let _this = this;
-                axios.get("http://10.6.3.88:8080/v1/GP/ReturnSampleShelf", {
+                axios.get("http://"+_this.ip+"/v1/GP/ReturnSampleShelf", {
                         headers: {
                             'Content-Type': 'application/json'
                         }
                     })
                     .then(function(response) {
                         console.log(response);
-                        axios.get("http://10.6.3.88:8080/v1/GP/BorrowSampleShelf", {
+                        axios.get("http://"+_this.ip+"/v1/GP/BorrowSampleShelf", {
                                 headers: {
                                     'Content-Type': 'application/json'
                                 }
@@ -504,7 +504,7 @@
                 this.states = "empty";
                 this.bidOk = false;
                 let _this = this;
-                axios.get("http://10.6.3.88:8080/v1/GP/BorrowSampleShelf", {
+                axios.get("http://"+_this.ip+"/v1/GP/BorrowSampleShelf", {
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -528,7 +528,7 @@
                     return a - b
                 });
                 let _this = this;
-                axios.post('http://10.6.3.88:8080/v1/GP/SetResourceSample', _this.checkedSamples, {
+                axios.post("http://"+_this.ip+"/v1/GP/SetResourceSample", _this.checkedSamples, {
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -545,7 +545,7 @@
                             console.log(error);
                             // _this.error(response);
                         })
-                axios.get("http://10.6.3.88:8080/v1/GP/ReturnSampleShelf", {
+                axios.get("http://"+_this.ip+"/v1/GP/ReturnSampleShelf", {
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -561,7 +561,7 @@
             getLenOfThread() {
                 // 得到线程的总长度
                 let _this = this;
-                axios.get("http://10.6.3.88:8080/v1/GP/GetLengthOfThread", {
+                axios.get("http://"+_this.ip+"/v1/GP/GetLengthOfThread", {
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -578,7 +578,7 @@
             startSingleThread(threadNum) {
                 // 选择线程号，开始单线程
                 let _this = this;
-                axios.get("http://10.6.3.88:8080/v1/GP/StartSingleThread/?threadId=" + threadNum, {
+                axios.get("http://"+_this.ip+"/v1/GP/StartSingleThread/?threadId=" + threadNum, {
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -627,7 +627,7 @@
             startMultipleThreads() {
                 // 开始6个线程，间隔80秒
                 let _this = this;
-                axios.get("http://10.6.3.88:8080/v1/GP/StartMultipleThreads/?numOfThread=6&interval=80", {
+                axios.get("http://"+_this.ip+"/v1/GP/StartMultipleThreads/?numOfThread=6&interval=80", {
                         headers: {
                             'Content-Type': 'application/json'
                         }
@@ -663,7 +663,7 @@
             setWebSocketThread() {
                 // 建立线程ws，获取每个线程占有资源和进程
                 // 打开一个 web socket
-                var wsThread = new WebSocket("ws://10.6.3.88:8080/ws/join");
+                var wsThread = new WebSocket("ws://"+_this.ip+"/ws/join");
                 wsThread.onopen = function() {
                     // Web Socket 已连接上，使用 send() 方法发送数据
                     // setInterval(ws.send("0"),1000);
@@ -735,7 +735,7 @@
             setWebSocketResourceManager() {
                 // 建立资源管理ws，判断获取资源的状态，判断进程状态并获得取8个样品步骤的进程并取消勾选状态，样品架的状态
                 // 打开一个 web socket
-                var wsResourceManager = new WebSocket("ws://10.6.3.88:8080/ws/resource");
+                var wsResourceManager = new WebSocket("ws://"+_this.ip+"/ws/resource");
                 wsResourceManager.onopen = function() {};
 
                 let _this = this;

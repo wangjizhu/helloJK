@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-type UserInterfaceController struct {
+type GPController struct {
 	beego.Controller
 }
 
@@ -18,7 +18,7 @@ type UserInterfaceController struct {
 // @Success 200 ok
 // @Failure 403 no
 // @router /SetResourceSample/ [post]
-func (u *UserInterfaceController) SetResourceSample(){
+func (u *GPController) SetResourceSample(){
 	fmt.Println("aaaaaaa")
 
 	var s []int
@@ -51,7 +51,7 @@ func (u *UserInterfaceController) SetResourceSample(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /StartSingleThread/ [get]
-func (u *UserInterfaceController) StartSingleThread(){
+func (u *GPController) StartSingleThread(){
 	threadId:=u.GetString("threadId")
 
 	err:=models.StartSingleThread(threadId)
@@ -74,7 +74,7 @@ func (u *UserInterfaceController) StartSingleThread(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /StartMultipleThreads/ [get]
-func (u *UserInterfaceController) StartMultipleThreads(){
+func (u *GPController) StartMultipleThreads(){
 	numOfThread,err:=u.GetInt("numOfThread")
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusBadRequest)
@@ -109,7 +109,7 @@ func (u *UserInterfaceController) StartMultipleThreads(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /GetLengthOfThread/ [get]
-func (u *UserInterfaceController) GetLengthOfThread(){
+func (u *GPController) GetLengthOfThread(){
 	u.Data["json"]=models.LengthOfRows
 	u.ServeJSON()
 	return
@@ -121,7 +121,7 @@ func (u *UserInterfaceController) GetLengthOfThread(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /BorrowSampleShelf/ [get]
-func (u *UserInterfaceController) BorrowSampleShelf(){
+func (u *GPController) BorrowSampleShelf(){
 	applyresources:=models.ResourceSet{}
 	applyresources=append(applyresources,models.ResourceDescriptor{
 		Status:              0,
@@ -159,7 +159,7 @@ func (u *UserInterfaceController) BorrowSampleShelf(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /ReturnSampleShelf/ [get]
-func (u *UserInterfaceController) ReturnSampleShelf(){
+func (u *GPController) ReturnSampleShelf(){
 	applyresources:=models.ResourceSet{}
 	applyresources=append(applyresources,models.ResourceDescriptor{
 		Status:              0,
