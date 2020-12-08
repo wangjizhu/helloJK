@@ -663,7 +663,7 @@
             setWebSocketThread() {
                 // 建立线程ws，获取每个线程占有资源和进程
                 // 打开一个 web socket
-                var wsThread = new WebSocket("ws://"+_this.ip+"/ws/join");
+                var wsThread = new WebSocket("ws://"+this.ip+"/ws/join");
                 wsThread.onopen = function() {
                     // Web Socket 已连接上，使用 send() 方法发送数据
                     // setInterval(ws.send("0"),1000);
@@ -735,7 +735,7 @@
             setWebSocketResourceManager() {
                 // 建立资源管理ws，判断获取资源的状态，判断进程状态并获得取8个样品步骤的进程并取消勾选状态，样品架的状态
                 // 打开一个 web socket
-                var wsResourceManager = new WebSocket("ws://"+_this.ip+"/ws/resource");
+                var wsResourceManager = new WebSocket("ws://"+this.ip+"/ws/resource");
                 wsResourceManager.onopen = function() {};
 
                 let _this = this;
