@@ -62,7 +62,7 @@ func init(){
 
 //资源描述符 申请和响应都用同样结构 根据实际情况使用不同字段
 type ResourceDescriptor struct {
-	//查询是返回状态
+	//查询时返回状态
 	Status int
 	Enable bool
 

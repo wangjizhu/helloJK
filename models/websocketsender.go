@@ -77,7 +77,7 @@ func SendMessageThread(m MessageThread)error{
 	return nil
 }
 
-
+//---------------------------------------------------------------------
 //链接一次 记下来
 func SetWsResource(ws *websocket.Conn){
 	_wsResource =ws

@@ -7,7 +7,7 @@ paths:
       tags:
       - GP
       description: BorrowSampleShelf
-      operationId: UserInterfaceController.BorrowSampleShelf
+      operationId: GPController.BorrowSampleShelf
       responses:
         "200":
           description: ok
@@ -18,7 +18,7 @@ paths:
       tags:
       - GP
       description: 获取线程总长度
-      operationId: UserInterfaceController.GetLengthOfThread
+      operationId: GPController.GetLengthOfThread
       responses:
         "200":
           description: ok
@@ -29,7 +29,7 @@ paths:
       tags:
       - GP
       description: ReturnSampleShelf
-      operationId: UserInterfaceController.ReturnSampleShelf
+      operationId: GPController.ReturnSampleShelf
       responses:
         "200":
           description: ok
@@ -40,7 +40,7 @@ paths:
       tags:
       - GP
       description: 设置原始样品试管内容
-      operationId: UserInterfaceController.SetResourceSample
+      operationId: GPController.SetResourceSample
       parameters:
       - in: body
         name: body
@@ -58,7 +58,7 @@ paths:
       tags:
       - GP
       description: 开始多条线程 输入线程数量 和线程开始时间间隔 将自动开始 直到全部线程完成后 调用结束
-      operationId: UserInterfaceController.StartMultipleThreads
+      operationId: GPController.StartMultipleThreads
       parameters:
       - in: query
         name: numOfThread
@@ -82,7 +82,7 @@ paths:
       tags:
       - GP
       description: 输入线程号 开始单线程
-      operationId: UserInterfaceController.startSingleThread
+      operationId: GPController.startSingleThread
       parameters:
       - in: query
         name: threadId

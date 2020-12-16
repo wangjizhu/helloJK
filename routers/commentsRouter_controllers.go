@@ -10,7 +10,7 @@ func init() {
     beego.GlobalControllerRouter["helloprecision/controllers:GPController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:GPController"],
         beego.ControllerComments{
             Method: "BorrowSampleShelf",
-            Router: `/BorrowSampleShelf/`,
+            Router: "/BorrowSampleShelf/",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -19,7 +19,7 @@ func init() {
     beego.GlobalControllerRouter["helloprecision/controllers:GPController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:GPController"],
         beego.ControllerComments{
             Method: "GetLengthOfThread",
-            Router: `/GetLengthOfThread/`,
+            Router: "/GetLengthOfThread/",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -28,7 +28,7 @@ func init() {
     beego.GlobalControllerRouter["helloprecision/controllers:GPController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:GPController"],
         beego.ControllerComments{
             Method: "ReturnSampleShelf",
-            Router: `/ReturnSampleShelf/`,
+            Router: "/ReturnSampleShelf/",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -37,7 +37,7 @@ func init() {
     beego.GlobalControllerRouter["helloprecision/controllers:GPController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:GPController"],
         beego.ControllerComments{
             Method: "SetResourceSample",
-            Router: `/SetResourceSample/`,
+            Router: "/SetResourceSample/",
             AllowHTTPMethods: []string{"post"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -46,7 +46,7 @@ func init() {
     beego.GlobalControllerRouter["helloprecision/controllers:GPController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:GPController"],
         beego.ControllerComments{
             Method: "StartMultipleThreads",
-            Router: `/StartMultipleThreads/`,
+            Router: "/StartMultipleThreads/",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
@@ -55,7 +55,7 @@ func init() {
     beego.GlobalControllerRouter["helloprecision/controllers:GPController"] = append(beego.GlobalControllerRouter["helloprecision/controllers:GPController"],
         beego.ControllerComments{
             Method: "StartSingleThread",
-            Router: `/StartSingleThread/`,
+            Router: "/StartSingleThread/",
             AllowHTTPMethods: []string{"get"},
             MethodParams: param.Make(),
             Filters: nil,
