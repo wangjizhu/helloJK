@@ -2,7 +2,7 @@ package routers
 
 import (
 	"helloprecision/controllers"
-	"github.com/astaxie/beego"
+	beego "github.com/beego/beego/v2/adapter"
 )
 
 func init() {
