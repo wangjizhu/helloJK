@@ -13,7 +13,51 @@ import (
 	"time"
 )
 
+type bookInfo struct {
+	 resourceStart int
+	 resourceEnd int
+	 paramStart int
+	 paramEnd int
+	 duration int
+	 length int
+	 rows [][]string
+	 rowEnd int
+}
 
+var _bookInfo bookInfo
+
+func bookInfoInit(){
+	f,err:=excelize.OpenFile("./Book1.xlsx")
+	if err != nil {
+		panic(err)
+	}
+	_bookInfo.rows, err = f.GetRows("Sheet1")
+	if err != nil {
+		panic(err)
+	}
+	_bookInfo.length=len(rows)
+
+	for i,v:=range _bookInfo.rows[0]{
+		fmt.Println(i,v)
+		switch v{
+		case "#resourceStart":
+			_bookInfo.resourceStart=i
+			fmt.Println(v,_bookInfo.resourceStart,"oh yeah~")
+		case "#resourceEnd":
+			_bookInfo.resourceEnd=i
+			fmt.Println(v,_bookInfo.resourceEnd)
+		case "#duration":
+			_bookInfo.duration=i
+			fmt.Println(v,_bookInfo.duration)
+		case "#paramStart":
+			_bookInfo.paramStart=i
+			fmt.Println(v,_bookInfo.paramStart,"oh my god")
+		case "#paramEnd":
+			_bookInfo.paramEnd=i
+			fmt.Println(v,_bookInfo.paramEnd)
+		}
+	}
+}
 
 
 
@@ -23,13 +67,15 @@ var rows [][]string
 var LengthOfRows int
 
 
+
 func init(){
+	bookInfoInit()
+
 	var err error
 	_f,err=excelize.OpenFile("./Book1.xlsx")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("aaa")
 
 	rows, err = _f.GetRows("Sheet1")
 	if err != nil {
