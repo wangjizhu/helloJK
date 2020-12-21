@@ -14,47 +14,47 @@ import (
 )
 
 type bookInfo struct {
-	 resourceStart int
-	 resourceEnd int
-	 paramStart int
-	 paramEnd int
-	 duration int
-	 length int
-	 rows [][]string
-	 rowEnd int
+	 ResourceStart int
+	 ResourceEnd   int
+	 ParamStart    int
+	 ParamEnd      int
+	 Duration      int
+	 Length        int
+	 Rows          [][]string
+	 RowEnd        int
 }
 
-var _bookInfo bookInfo
+var BookInfo bookInfo
 
 func bookInfoInit(){
 	f,err:=excelize.OpenFile("./Book1.xlsx")
 	if err != nil {
 		panic(err)
 	}
-	_bookInfo.rows, err = f.GetRows("Sheet1")
+	BookInfo.Rows, err = f.GetRows("Sheet1")
 	if err != nil {
 		panic(err)
 	}
-	_bookInfo.length=len(rows)
+	BookInfo.Length =len(BookInfo.Rows)
 
-	for i,v:=range _bookInfo.rows[0]{
+	for i,v:=range BookInfo.Rows[0]{
 		fmt.Println(i,v)
 		switch v{
-		case "#resourceStart":
-			_bookInfo.resourceStart=i
-			fmt.Println(v,_bookInfo.resourceStart,"oh yeah~")
-		case "#resourceEnd":
-			_bookInfo.resourceEnd=i
-			fmt.Println(v,_bookInfo.resourceEnd)
-		case "#duration":
-			_bookInfo.duration=i
-			fmt.Println(v,_bookInfo.duration)
-		case "#paramStart":
-			_bookInfo.paramStart=i
-			fmt.Println(v,_bookInfo.paramStart,"oh my god")
-		case "#paramEnd":
-			_bookInfo.paramEnd=i
-			fmt.Println(v,_bookInfo.paramEnd)
+		case "#ResourceStart":
+			BookInfo.ResourceStart =i
+			fmt.Println(v, BookInfo.ResourceStart,"oh yeah~")
+		case "#ResourceEnd":
+			BookInfo.ResourceEnd =i
+			fmt.Println(v, BookInfo.ResourceEnd)
+		case "#Duration":
+			BookInfo.Duration =i
+			fmt.Println(v, BookInfo.Duration)
+		case "#ParamStart":
+			BookInfo.ParamStart =i
+			fmt.Println(v, BookInfo.ParamStart,"oh my god")
+		case "#ParamEnd":
+			BookInfo.ParamEnd =i
+			fmt.Println(v, BookInfo.ParamEnd)
 		}
 	}
 }
@@ -62,31 +62,12 @@ func bookInfoInit(){
 
 
 var _r * ResourceManager
-var _f *excelize.File
-var rows [][]string
-var LengthOfRows int
-
-
 
 func init(){
 	bookInfoInit()
 
-	var err error
-	_f,err=excelize.OpenFile("./Book1.xlsx")
-	if err != nil {
-		panic(err)
-	}
-
-	rows, err = _f.GetRows("Sheet1")
-	if err != nil {
-		panic(err)
-	}
-
-	LengthOfRows=len(rows)
-	fmt.Println(LengthOfRows)
-
 	_r=NewResourceManager()
-	err=_r.Init()
+	err:=_r.Init()
 	if err != nil {
 		panic(err)
 	}
@@ -181,14 +162,14 @@ func (r *ResourceManager)Init()error{
 	}
 
 
-	for i:=4;i<=13;i++{
+	for i:=BookInfo.ResourceStart;i<=BookInfo.ResourceEnd;i++{
 		//挂资源名
-		rname:=rows[2][i]
+		rname:= BookInfo.Rows[2][i]
 		r.resources[rname]=ResourceSet{}
 		fmt.Println(rname)
 
 		//挂资源内容
-		amount, err := strconv.Atoi(rows[3][i])
+		amount, err := strconv.Atoi(BookInfo.Rows[3][i])
 		if err != nil {
 			return err
 		}

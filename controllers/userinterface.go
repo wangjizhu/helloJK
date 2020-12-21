@@ -110,7 +110,7 @@ func (u *GPController) StartMultipleThreads(){
 // @Failure 403 no
 // @router /GetLengthOfThread/ [get]
 func (u *GPController) GetLengthOfThread(){
-	u.Data["json"]=models.LengthOfRows
+	u.Data["json"]=models.BookInfo.Length
 	u.ServeJSON()
 	return
 }

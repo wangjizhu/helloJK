@@ -131,27 +131,27 @@ func StartSingleThread(threadId string)error{
 	}
 
 
-	fmt.Println(threadId,len(rows))
-	for i:=4;i<len(rows);i++{
+	fmt.Println(threadId, BookInfo.Length)
+	for i:=4;i< BookInfo.Length;i++{
 		color.Set(color.FgBlue)
-		fmt.Println(threadId,rows[i][0])
+		fmt.Println(threadId, BookInfo.Rows[i][0])
 		color.Unset()
 
 		//读入行资源
 		var resourceRecord []resourceApplyAndReturn
-		for j:=4;j<=13;j++{
+		for j:=BookInfo.ResourceStart;j<=BookInfo.ResourceEnd;j++{
 
 
 			rs:=resourceApplyAndReturn{
-				resourceName: rows[2][j],
+				resourceName: BookInfo.Rows[2][j],
 				apply:        false,
 				returnN:      false,
 			}
 		//	填入apply和retrun
 
-			if rows[i][j]!=""{
+			if BookInfo.Rows[i][j]!=""{
 
-				value, err := strconv.Atoi(rows[i][j])
+				value, err := strconv.Atoi(BookInfo.Rows[i][j])
 				if err != nil {
 					return err
 				}
@@ -169,8 +169,8 @@ func StartSingleThread(threadId string)error{
 
 		//读入行参数
 		params :=make(map[string]string)
-		for j:=15;j<=24;j++{
-			params[rows[2][j]]=rows[i][j]
+		for j:=BookInfo.ParamStart;j<=BookInfo.ParamEnd;j++{
+			params[BookInfo.Rows[2][j]]= BookInfo.Rows[i][j]
 
 		}
 
@@ -217,12 +217,12 @@ func StartSingleThread(threadId string)error{
 		color.Unset()
 		//2.允许通过后 开始模拟动作 等待时间后执行完成
 
-		duration,err:=strconv.ParseFloat(rows[i][14], 32)
+		duration,err:=strconv.ParseFloat(BookInfo.Rows[i][BookInfo.Duration], 32)
 		if err != nil {
 			return err
 		}
 
-		err=executeAction(threadId,rows[i][0],rows[i][1],rows[i][2],params,duration)
+		err=executeAction(threadId, BookInfo.Rows[i][0], BookInfo.Rows[i][1], BookInfo.Rows[i][2],params,duration)
 		if err != nil {
 			return err
 		}
