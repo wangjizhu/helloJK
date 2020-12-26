@@ -25,17 +25,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="d41d6c1c-b573-4647-9746-2e4e59b8889d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/watcherTasks.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/book2.xlsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/~$book2.xlsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/controllers/userinterface.go" beforeDir="false" afterPath="$PROJECT_DIR$/controllers/userinterface.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/helloprecision.exe" beforeDir="false" afterPath="$PROJECT_DIR$/helloprecision.exe" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lastupdate.tmp" beforeDir="false" afterPath="$PROJECT_DIR$/lastupdate.tmp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/resourcemanager.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/resourcemanager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/models/threadmanager.go" beforeDir="false" afterPath="$PROJECT_DIR$/models/threadmanager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/swagger/swagger.json" beforeDir="false" afterPath="$PROJECT_DIR$/swagger/swagger.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/swagger/swagger.yml" beforeDir="false" afterPath="$PROJECT_DIR$/swagger/swagger.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/helloprecision.exe" beforeDir="false" afterPath="$PROJECT_DIR$/helloprecision" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
