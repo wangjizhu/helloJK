@@ -94,14 +94,6 @@
                 "parameters": [
                     {
                         "in": "query",
-                        "name": "numOfThread",
-                        "description": "something",
-                        "required": true,
-                        "type": "integer",
-                        "format": "int64"
-                    },
-                    {
-                        "in": "query",
                         "name": "interval",
                         "description": "\u003e=80",
                         "required": true,

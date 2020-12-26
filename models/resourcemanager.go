@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-type bookInfo struct {
+type sheetInfo struct {
 	 ResourceStart int
 	 ResourceEnd   int
 	 ParamStart    int
@@ -24,50 +24,83 @@ type bookInfo struct {
 	 RowEnd        int
 }
 
-var BookInfo bookInfo
 
-func bookInfoInit(){
-	f,err:=excelize.OpenFile("./Book1.xlsx")
+var SheetsInfo map [string]sheetInfo
+
+
+func SheetsInfoInit()error{
+	var err error
+	if _f==nil{
+		return errors.New("no _f")
+	}
+
+	SheetsInfo=make(map[string] sheetInfo)
+	for index, name := range _f.GetSheetMap() {
+		fmt.Println(index, name)
+		SheetsInfo[name],err=getSheetInfo(name)
+		if err != nil {
+			return err
+		}
+
+	}
+	fmt.Println(SheetsInfo)
+	return nil
+}
+
+func getSheetInfo(sheetName string)(sheetInfo,error){
+	var sheetInfo sheetInfo
+	var err error
+	sheetInfo.Rows, err = _f.GetRows(sheetName)
 	if err != nil {
 		panic(err)
 	}
-	BookInfo.Rows, err = f.GetRows("Sheet1")
-	if err != nil {
-		panic(err)
-	}
-	BookInfo.Length =len(BookInfo.Rows)
+	sheetInfo.Length =len(sheetInfo.Rows)
 
-	for i,v:=range BookInfo.Rows[0]{
+	for i,v:=range sheetInfo.Rows[0]{
 		fmt.Println(i,v)
 		switch v{
 		case "#ResourceStart":
-			BookInfo.ResourceStart =i
-			fmt.Println(v, BookInfo.ResourceStart,"oh yeah~")
+			sheetInfo.ResourceStart =i
+			fmt.Println(v, sheetInfo.ResourceStart,"oh yeah~")
 		case "#ResourceEnd":
-			BookInfo.ResourceEnd =i
-			fmt.Println(v, BookInfo.ResourceEnd)
+			sheetInfo.ResourceEnd =i
+			fmt.Println(v, sheetInfo.ResourceEnd)
 		case "#Duration":
-			BookInfo.Duration =i
-			fmt.Println(v, BookInfo.Duration)
+			sheetInfo.Duration =i
+			fmt.Println(v, sheetInfo.Duration)
 		case "#ParamStart":
-			BookInfo.ParamStart =i
-			fmt.Println(v, BookInfo.ParamStart,"oh my god")
+			sheetInfo.ParamStart =i
+			fmt.Println(v, sheetInfo.ParamStart,"oh my god")
 		case "#ParamEnd":
-			BookInfo.ParamEnd =i
-			fmt.Println(v, BookInfo.ParamEnd)
+			sheetInfo.ParamEnd =i
+			fmt.Println(v, sheetInfo.ParamEnd)
 		}
 	}
+
+	return sheetInfo,nil
 }
 
 
 
 var _r * ResourceManager
+var _f * excelize.File
 
 func init(){
-	bookInfoInit()
+	var err error
+	_f,err=excelize.OpenFile("./Book2.xlsx")
+	if err != nil {
+		panic(err)
+	}
+
+	//原来的一张Sheet初始化
+	err=SheetsInfoInit()
+	if err != nil {
+		panic(err)
+	}
+
 
 	_r=NewResourceManager()
-	err:=_r.Init()
+	err=_r.Init()
 	if err != nil {
 		panic(err)
 	}
@@ -162,14 +195,14 @@ func (r *ResourceManager)Init()error{
 	}
 
 
-	for i:=BookInfo.ResourceStart;i<=BookInfo.ResourceEnd;i++{
+	for i:= SheetsInfo["Sheet1"].ResourceStart;i<= SheetsInfo["Sheet1"].ResourceEnd;i++{
 		//挂资源名
-		rname:= BookInfo.Rows[2][i]
+		rname:= SheetsInfo["Sheet1"].Rows[2][i]
 		r.resources[rname]=ResourceSet{}
 		fmt.Println(rname)
 
 		//挂资源内容
-		amount, err := strconv.Atoi(BookInfo.Rows[3][i])
+		amount, err := strconv.Atoi(SheetsInfo["Sheet1"].Rows[3][i])
 		if err != nil {
 			return err
 		}

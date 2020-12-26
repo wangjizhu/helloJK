@@ -54,7 +54,7 @@ func (u *GPController) SetResourceSample(){
 func (u *GPController) StartSingleThread(){
 	threadId:=u.GetString("threadId")
 
-	err:=models.StartSingleThread(threadId)
+	err:=models.StartSingleThread(threadId,"Sheet1")
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
 		u.Data["json"]=err.Error()
@@ -69,19 +69,12 @@ func (u *GPController) StartSingleThread(){
 
 // @Title StartMultipleThreads
 // @Description 开始多条线程 输入线程数量 和线程开始时间间隔 将自动开始 直到全部线程完成后 调用结束
-// @Param	numOfThread	query   int	 true "something"
 // @Param	interval	query   int	 true ">=80"
 // @Success 200 ok
 // @Failure 403 no
 // @router /StartMultipleThreads/ [get]
 func (u *GPController) StartMultipleThreads(){
-	numOfThread,err:=u.GetInt("numOfThread")
-	if err != nil {
-		u.Ctx.Output.SetStatus(http.StatusBadRequest)
-		u.Data["json"]=err.Error()
-		u.ServeJSON()
-		return
-	}
+
 	interval,err:=u.GetInt("interval")
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusBadRequest)
@@ -91,7 +84,7 @@ func (u *GPController) StartMultipleThreads(){
 	}
 
 
-	err=models.StartMultipleThreads(numOfThread,interval)
+	err=models.StartMultipleThreads(interval)
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
 		u.Data["json"]=err.Error()
@@ -110,7 +103,7 @@ func (u *GPController) StartMultipleThreads(){
 // @Failure 403 no
 // @router /GetLengthOfThread/ [get]
 func (u *GPController) GetLengthOfThread(){
-	u.Data["json"]=models.BookInfo.Length
+	u.Data["json"]=models.SheetsInfo["Sheet1"].Length
 	u.ServeJSON()
 	return
 }

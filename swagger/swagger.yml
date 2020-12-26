@@ -61,12 +61,6 @@ paths:
       operationId: GPController.StartMultipleThreads
       parameters:
       - in: query
-        name: numOfThread
-        description: something
-        required: true
-        type: integer
-        format: int64
-      - in: query
         name: interval
         description: '>=80'
         required: true
