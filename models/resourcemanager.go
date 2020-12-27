@@ -13,31 +13,36 @@ import (
 	"time"
 )
 
+//实际上是各种下标位置 方便后面引用
 type sheetInfo struct {
-	 ResourceStart int
-	 ResourceEnd   int
-	 ParamStart    int
-	 ParamEnd      int
-	 Duration      int
-	 Length        int
-	 Rows          [][]string
-	 RowEnd        int
+	No            int
+	ActionName    int
+	ActionNameC   int
+	Tips          int
+	ResourceStart int
+	ResourceEnd   int
+	ParamStart    int
+	ParamEnd      int
+	Duration      int
+	Length        int
+	Rows          [][]string
+	RowEnd        int
+
+	ParamNameRow int
 }
 
+var SheetsInfo map[string]sheetInfo
 
-var SheetsInfo map [string]sheetInfo
-
-
-func SheetsInfoInit()error{
+func SheetsInfoInit() error {
 	var err error
-	if _f==nil{
+	if _f == nil {
 		return errors.New("no _f")
 	}
 
-	SheetsInfo=make(map[string] sheetInfo)
+	SheetsInfo = make(map[string]sheetInfo)
 	for index, name := range _f.GetSheetMap() {
 		fmt.Println(index, name)
-		SheetsInfo[name],err=getSheetInfo(name)
+		SheetsInfo[name], err = getSheetInfo(name)
 		if err != nil {
 			return err
 		}
@@ -47,76 +52,82 @@ func SheetsInfoInit()error{
 	return nil
 }
 
-func getSheetInfo(sheetName string)(sheetInfo,error){
+func getSheetInfo(sheetName string) (sheetInfo, error) {
 	var sheetInfo sheetInfo
 	var err error
 	sheetInfo.Rows, err = _f.GetRows(sheetName)
 	if err != nil {
 		panic(err)
 	}
-	sheetInfo.Length =len(sheetInfo.Rows)
+	sheetInfo.Length = len(sheetInfo.Rows)
 
-	for i,v:=range sheetInfo.Rows[0]{
-		fmt.Println(i,v)
-		switch v{
+	for i, v := range sheetInfo.Rows[0] {
+		fmt.Println(i, v)
+		switch v {
+		case "#No.":
+			sheetInfo.No = i
+			fmt.Println(v, sheetInfo.No)
+		case "#ActionName":
+			sheetInfo.ActionName = i
+			fmt.Println(v, sheetInfo.ActionName)
+		case "#ActionNameC":
+			sheetInfo.ActionNameC = i
+			fmt.Println(v, sheetInfo.ActionNameC)
 		case "#ResourceStart":
-			sheetInfo.ResourceStart =i
-			fmt.Println(v, sheetInfo.ResourceStart,"oh yeah~")
+			sheetInfo.ResourceStart = i
+			fmt.Println(v, sheetInfo.ResourceStart, "oh yeah~")
 		case "#ResourceEnd":
-			sheetInfo.ResourceEnd =i
+			sheetInfo.ResourceEnd = i
 			fmt.Println(v, sheetInfo.ResourceEnd)
 		case "#Duration":
-			sheetInfo.Duration =i
+			sheetInfo.Duration = i
 			fmt.Println(v, sheetInfo.Duration)
 		case "#ParamStart":
-			sheetInfo.ParamStart =i
-			fmt.Println(v, sheetInfo.ParamStart,"oh my god")
+			sheetInfo.ParamStart = i
+			fmt.Println(v, sheetInfo.ParamStart, "oh my god")
 		case "#ParamEnd":
-			sheetInfo.ParamEnd =i
+			sheetInfo.ParamEnd = i
 			fmt.Println(v, sheetInfo.ParamEnd)
 		}
 	}
 
-	return sheetInfo,nil
+	//好吧 这个2 是神器数字...
+	sheetInfo.ParamNameRow = 2
+
+	return sheetInfo, nil
 }
 
+var _r *ResourceManager
+var _f *excelize.File
 
-
-var _r * ResourceManager
-var _f * excelize.File
-
-func init(){
+func init() {
 	var err error
-	_f,err=excelize.OpenFile("./Book2.xlsx")
+	_f, err = excelize.OpenFile("./book2.xlsx")
 	if err != nil {
 		panic(err)
 	}
 
 	//原来的一张Sheet初始化
-	err=SheetsInfoInit()
+	err = SheetsInfoInit()
 	if err != nil {
 		panic(err)
 	}
 
-
-	_r=NewResourceManager()
-	err=_r.Init()
+	_r = NewResourceManager()
+	err = _r.Init()
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println(_r.resources)
 
-
 	//一秒一次轮询用于list
 	go func() {
-		for{
+		for {
 			_ = _r.PollingList()
 			time.Sleep(1000 * time.Millisecond)
 		}
 	}()
-
-
 
 }
 
@@ -127,78 +138,71 @@ type ResourceDescriptor struct {
 	Enable bool
 
 	//资源名 资源id 资源备注
-	ResourceName string
-	ResourceId int
+	ResourceName        string
+	ResourceId          int
 	ResourceDescription string
 }
 
-type ResourceSet [] ResourceDescriptor
+type ResourceSet []ResourceDescriptor
 
-
-type applyItem struct{
-	userName          string
-	applyResourceSet ResourceSet    //挂一系列需要申请的资源
+type applyItem struct {
+	userName         string
+	applyResourceSet ResourceSet //挂一系列需要申请的资源
 	resultChan       chan ResourceSet
-
 }
-
 
 type ResourceManager struct {
 	//这个锁用来保证map多线程查询和更改时候的安全性 官方解决方案
 	sync.RWMutex
-	listLock sync.Mutex
+	listLock  sync.Mutex
 	queryLock sync.Mutex
 
 	//全部的资源纪录
-	resources map[string] ResourceSet
-	baseParams map[string] []int
+	resources  map[string]ResourceSet
+	baseParams map[string][]int
 
 	//正在申请中的list 需要满足 谁想要接什么
 	applyingList *list.List
 
 	//已经被借走的资源列表 谁借了什么
-	offeredMap map[string] [] ResourceDescriptor
-
+	offeredMap map[string][]ResourceDescriptor
 }
 
-
-func NewResourceManager()*ResourceManager{
+func NewResourceManager() *ResourceManager {
 	return &ResourceManager{
 		RWMutex:      sync.RWMutex{},
 		resources:    nil,
 		applyingList: nil,
-		offeredMap:  nil,
+		offeredMap:   nil,
 	}
 }
 
-func GetResourceManager()(*ResourceManager,error){
-	if _r!=nil{
-		return _r,nil
-	}else{
-		return nil,errors.New("no rsmanger at all")
+func GetResourceManager() (*ResourceManager, error) {
+	if _r != nil {
+		return _r, nil
+	} else {
+		return nil, errors.New("no rsmanger at all")
 	}
 }
 
 //根据配置 初始化资源管理器 主要是置其中各种资源
-func (r *ResourceManager)Init()error{
+func (r *ResourceManager) Init() error {
 
 	//初始化两个list
-	r.applyingList=list.New()
+	r.applyingList = list.New()
 
+	r.resources = make(map[string]ResourceSet)
+	r.offeredMap = make(map[string][]ResourceDescriptor)
 
-	r.resources=make(map[string] ResourceSet)
-	r.offeredMap=make(map[string] [] ResourceDescriptor)
-
-	r.baseParams=make(map[string] []int)
-	for s:=0;s<Num_of_Samples;s++{
+	r.baseParams = make(map[string][]int)
+	for s := 0; s < Num_of_Samples; s++ {
 		r.baseParams["样本装载位指定位置"] = append(r.baseParams["样本装载位指定位置"], s+11)
 	}
 
-
-	for i:= SheetsInfo["Sheet1"].ResourceStart;i<= SheetsInfo["Sheet1"].ResourceEnd;i++{
+	for i := SheetsInfo["Sheet1"].ResourceStart; i <= SheetsInfo["Sheet1"].ResourceEnd; i++ {
 		//挂资源名
-		rname:= SheetsInfo["Sheet1"].Rows[2][i]
-		r.resources[rname]=ResourceSet{}
+		rname := SheetsInfo["Sheet1"].Rows[2][i]
+		r.resources[rname] = ResourceSet{}
 		fmt.Println(rname)
 
 		//挂资源内容
@@ -208,15 +212,15 @@ func (r *ResourceManager)Init()error{
 		}
 		fmt.Println(amount)
 
-		for j:=0;j<amount;j++{
-			resource:=ResourceDescriptor{
+		for j := 0; j < amount; j++ {
+			resource := ResourceDescriptor{
 				Status:              0,
 				Enable:              true,
 				ResourceName:        rname,
 				ResourceId:          j,
 				ResourceDescription: "",
 			}
-			r.resources[rname]=append(r.resources[rname],resource)
+			r.resources[rname] = append(r.resources[rname], resource)
 		}
 
 	}
@@ -224,48 +228,42 @@ func (r *ResourceManager)Init()error{
 	//每秒返回资源管理器中资源数量
 	go func() {
 
-		for{
+		for {
 			//fmt.Println(r.resources)
-			err:=SendMessageResource(MakeMessageResourceFromResourceMap(r.resources,r.baseParams["样本装载位指定位置"]))
+			err := SendMessageResource(MakeMessageResourceFromResourceMap(r.resources, r.baseParams["样本装载位指定位置"]))
 			if err != nil {
 
 			}
-			time.Sleep(1*time.Second)
+			time.Sleep(1 * time.Second)
 		}
 
 	}()
-
-
 
 	return nil
 }
 
 //向资源管理器注册一个新的资源
-func (r *ResourceManager) registerResource(resourcename string,recourceamount int)error {
+func (r *ResourceManager) registerResource(resourcename string, recourceamount int) error {
 
 	return nil
 }
 
-
-
 //向资源管理器申请某些资源 可以一次申请多个 当全部都可以被使用时候返回 否则阻塞 可能会超时
-func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (ResourceSet,error){
+func (r *ResourceManager) ApplyResource(username string, resources ResourceSet) (ResourceSet, error) {
 	//不需要申请 就不要瞎参和
-	if len(resources)==0{
-		return nil,errors.New("empty resource apply")
+	if len(resources) == 0 {
+		return nil, errors.New("empty resource apply")
 	}
-
-
 
 	var getresourceset ResourceSet
 	//测试 一旦申请 直接满足回复 用于单线程测试
-	applyitem:=applyItem{
+	applyitem := applyItem{
 		userName:         username,
 		applyResourceSet: resources,
 		resultChan:       make(chan ResourceSet),
 	}
 
-	fmt.Println("提出申请",applyitem)
+	fmt.Println("提出申请", applyitem)
 
 	//注册到申请列表
 	r.listLock.Lock()
@@ -274,50 +272,49 @@ func (r *ResourceManager)ApplyResource(username string ,resources ResourceSet) (
 	fmt.Println("推进去一个申请")
 
 	//阻塞等待 可能会超时
-	select{
-		case getresourceset = <-applyitem.resultChan:
-			color.Set(color.BgGreen,color.FgBlack)
-			fmt.Println("成功获得资源",username,resources)
-			color.Unset()
-			return getresourceset,nil
+	select {
+	case getresourceset = <-applyitem.resultChan:
+		color.Set(color.BgGreen, color.FgBlack)
+		fmt.Println("成功获得资源", username, resources)
+		color.Unset()
+		return getresourceset, nil
 
-		case <-time.After(60 * time.Second):
-			color.Set(color.BgRed,color.FgBlack)
-			fmt.Println("申请等待超时!")
-			fmt.Println(username,resources)
-			color.Unset()
-			return nil,errors.New("timeout")
+	case <-time.After(60 * time.Second):
+		color.Set(color.BgRed, color.FgBlack)
+		fmt.Println("申请等待超时!")
+		fmt.Println(username, resources)
+		color.Unset()
+		return nil, errors.New("timeout")
 	}
 
 }
 
-
 //归还资源 强调 归还的资源需要携带id!!!
-func (r *ResourceManager)ReturnResource(username string ,resources ResourceSet)error{
-	fmt.Println("开始归还",username,resources)
+func (r *ResourceManager) ReturnResource(username string, resources ResourceSet) error {
+	fmt.Println("开始归还", username, resources)
 
-	for i:=0;i<len(resources);i++{
-		resourcename:=resources[i].ResourceName
-		id:=resources[i].ResourceId
+	for i := 0; i < len(resources); i++ {
+		resourcename := resources[i].ResourceName
+		id := resources[i].ResourceId
 
 		//资源管理器中还回去
-		r.resources[resourcename][id].Enable=true
+		r.resources[resourcename][id].Enable = true
 		//offerdMap中去掉
-		err:=r.removeResourceFromOfferedMap(username,resourcename,id)
+		err := r.removeResourceFromOfferedMap(username, resourcename, id)
 		if err != nil {
 			return err
 		}
 	}
 
-	fmt.Println("已归还",username,resources)
+	fmt.Println("已归还", username, resources)
 	return nil
 }
 
-func (r *ResourceManager) removeResourceFromOfferedMap(username string,resourcename string,id int)error{
-	for i:=0;i<len(r.offeredMap[username]);i++{
+func (r *ResourceManager) removeResourceFromOfferedMap(username string, resourcename string, id int) error {
+	for i := 0; i < len(r.offeredMap[username]); i++ {
 		//找到后删除
-		if r.offeredMap[username][i].ResourceName==resourcename && r.offeredMap[username][i].ResourceId==id{
-			r.offeredMap[username]=append(r.offeredMap[username][:i], r.offeredMap[username][i+1:]...)
+		if r.offeredMap[username][i].ResourceName == resourcename && r.offeredMap[username][i].ResourceId == id {
+			r.offeredMap[username] = append(r.offeredMap[username][:i], r.offeredMap[username][i+1:]...)
 		}
 	}
 	return nil
@@ -325,25 +322,25 @@ func (r *ResourceManager) removeResourceFromOfferedMap(username string,resourcen
 
 //核心!通过查找applyList 查找是否能够满足用户需求 并返回用户申请 ,,,每秒调用一次
 //若是多资源申请 要全部资源都可用情况下 才为可用 并返回全部资源到对应applyItem的resultChan里面
-func (r *ResourceManager)PollingList()error {
+func (r *ResourceManager) PollingList() error {
 
 	//fmt.Println("进入polling...")
 	var next *list.Element
 	for e := r.applyingList.Front(); e != nil; e = next {
 		// do something with e.Value 天坑这里 先把next存下来 万一删除了就找不到下一个了
 		next = e.Next()
-		applyitem:=e.Value.(applyItem)
-		fmt.Println("轮询中资源需求",applyitem)
+		applyitem := e.Value.(applyItem)
+		fmt.Println("轮询中资源需求", applyitem)
 		//检查这个节点里面的资源是否全部可用
-		available,checkresult,err:= r.checkAllResourcesAvailableFromOneApplyItem(applyitem)
+		available, checkresult, err := r.checkAllResourcesAvailableFromOneApplyItem(applyitem)
 		if err != nil {
 			return err
 		}
 
 		//全部资源可用
-		if available==true{
+		if available == true {
 			//去资源管理器记录下来
-			err:=r.getAllResourcesAvailableFromResult(checkresult)
+			err := r.getAllResourcesAvailableFromResult(checkresult)
 			if err != nil {
 				return err
 			}
@@ -352,56 +349,50 @@ func (r *ResourceManager)PollingList()error {
 			r.applyingList.Remove(e)
 
 			//表示申请成功 挂入offeredMap 记录下被谁取走
-			for i:=0;i<len(checkresult.applyResourceSet);i++{
+			for i := 0; i < len(checkresult.applyResourceSet); i++ {
 				//如果不存在则会新建
-				r.offeredMap[applyitem.userName]=append(r.offeredMap[applyitem.userName], checkresult.applyResourceSet[i])
+				r.offeredMap[applyitem.userName] = append(r.offeredMap[applyitem.userName], checkresult.applyResourceSet[i])
 
 			}
 
-
-			fmt.Println(checkresult.userName,"获得资源",checkresult.applyResourceSet)
+			fmt.Println(checkresult.userName, "获得资源", checkresult.applyResourceSet)
 
 			//结果用通道返回
 			e.Value.(applyItem).resultChan <- checkresult.applyResourceSet
 
-
-		//	不是全部资源可用 那就只有算求
-		}else{
-
+			//	不是全部资源可用 那就只有算求
+		} else {
 
 		}
-
-
 
 	}
 
 	return nil
 }
 
-
 //检查节点内部的是否全部资源可用 返回是否可用,可用的资源,和错误
-func (r *ResourceManager)checkAllResourcesAvailableFromOneApplyItem(applyitem applyItem)(bool,applyItem,error){
+func (r *ResourceManager) checkAllResourcesAvailableFromOneApplyItem(applyitem applyItem) (bool, applyItem, error) {
 	//查询时锁住 其实没必要 因为一次只能一个查询
 	//r.queryLock.Lock()
-	allright:=true
+	allright := true
 
-	for i:=0;i<len(applyitem.applyResourceSet);i++{
-		name:=applyitem.applyResourceSet[i].ResourceName
+	for i := 0; i < len(applyitem.applyResourceSet); i++ {
+		name := applyitem.applyResourceSet[i].ResourceName
 
 		//id是不知道的
-		affect,id,err:=r.checkResourceEnableFromResourceMap(name)
+		affect, id, err := r.checkResourceEnableFromResourceMap(name)
 		if err != nil {
-			return false,applyitem,err
+			return false, applyitem, err
 		}
 
 		//找到了资源
-		if affect==true{
+		if affect == true {
 			//id记录下来
-			applyitem.applyResourceSet[i].ResourceId=id
+			applyitem.applyResourceSet[i].ResourceId = id
 
-		}else{
+		} else {
 
-			allright=false
+			allright = false
 			break
 
 		}
@@ -409,17 +400,15 @@ func (r *ResourceManager)checkAllResourcesAvailableFromOneApplyItem(applyitem ap
 	}
 
 	//都有
-	if allright==true{
+	if allright == true {
 
-		return true,applyitem,nil
-	//至少有一个没有
-	}else{
+		return true, applyitem, nil
+		//至少有一个没有
+	} else {
 
-		return false,applyitem,nil
+		return false, applyitem, nil
 
 	}
-
-
 
 	//查完了 放开
 	//r.queryLock.Unlock()
@@ -427,12 +416,12 @@ func (r *ResourceManager)checkAllResourcesAvailableFromOneApplyItem(applyitem ap
 }
 
 //检查并返回具体资源可用的那个Id 没找到则返回false
-func (r *ResourceManager) checkResourceEnableFromResourceMap(resourcename string)(bool,int,error){
+func (r *ResourceManager) checkResourceEnableFromResourceMap(resourcename string) (bool, int, error) {
 
-	for i:=0;i<len(r.resources[resourcename]);i++{
+	for i := 0; i < len(r.resources[resourcename]); i++ {
 
-		if r.resources[resourcename][i].Enable==true{
-			return	true, i, nil
+		if r.resources[resourcename][i].Enable == true {
+			return true, i, nil
 		}
 
 	}
@@ -441,63 +430,57 @@ func (r *ResourceManager) checkResourceEnableFromResourceMap(resourcename string
 	return false, 0, nil
 }
 
-
-
-
-
 //通过对资源管理器资源标记,来把资源分配给用户 在先调用可用判断后才能分配
-func (r *ResourceManager)getAllResourcesAvailableFromResult(checkresult applyItem)error{
-	for i:=0;i<len(checkresult.applyResourceSet);i++{
-		name:=checkresult.applyResourceSet[i].ResourceName
-		id:=checkresult.applyResourceSet[i].ResourceId
+func (r *ResourceManager) getAllResourcesAvailableFromResult(checkresult applyItem) error {
+	for i := 0; i < len(checkresult.applyResourceSet); i++ {
+		name := checkresult.applyResourceSet[i].ResourceName
+		id := checkresult.applyResourceSet[i].ResourceId
 		//登记处取下来
-		r.resources[name][id].Enable=false
+		r.resources[name][id].Enable = false
 	}
 	return nil
 }
 
 //清理offeredmap 把对应线程的内容删除掉
-func (r *ResourceManager)clearOfferedMapByUserName(username string){
-	delete(r.offeredMap,username)
+func (r *ResourceManager) clearOfferedMapByUserName(username string) {
+	delete(r.offeredMap, username)
 }
 
+func (r *ResourceManager) getIdbyNameFromBaseParams(paramname string) (int, error) {
 
-func (r *ResourceManager)getIdbyNameFromBaseParams(paramname string)(int,error){
+	if len(r.baseParams[paramname]) > 0 {
 
-	if len(r.baseParams[paramname])>0{
-
-		value:=r.baseParams[paramname][0]
+		value := r.baseParams[paramname][0]
 		r.baseParams[paramname] = append(r.baseParams[paramname][:0], r.baseParams[paramname][1:]...)
 
-		return value,nil
+		return value, nil
 
 	}
 
-	return -1,errors.New(paramname+"is empty!")
+	return -1, errors.New(paramname + "is empty!")
 }
 
-func SetResourceSample(s []int)error{
-	r,err:=GetResourceManager()
+func SetResourceSample(s []int) error {
+	r, err := GetResourceManager()
 	if err != nil {
 		return err
 	}
-	r.baseParams["样本装载位指定位置"]=s
+	r.baseParams["样本装载位指定位置"] = s
 	return nil
 }
 
-
-func SendMessageResource(m MessageResource)error{
-	data,err:=json.Marshal(&m)
-	if err!=nil{
+func SendMessageResource(m MessageResource) error {
+	data, err := json.Marshal(&m)
+	if err != nil {
 		panic(err)
 	}
-	ws:=GetWsResource()
+	ws := GetWsResource()
 
-	if ws==nil{
+	if ws == nil {
 		return errors.New("no _wsResource")
 	}
 
-	if err= ws.WriteMessage(websocket.TextMessage, data);err!= nil {
+	if err = ws.WriteMessage(websocket.TextMessage, data); err != nil {
 		// User disconnected.
 		return err
 	}

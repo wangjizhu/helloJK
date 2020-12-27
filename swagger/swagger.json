@@ -95,7 +95,7 @@
                     {
                         "in": "query",
                         "name": "interval",
-                        "description": "\u003e=80",
+                        "description": "\u003e=10",
                         "required": true,
                         "type": "integer",
                         "format": "int64"

@@ -18,29 +18,29 @@ type GPController struct {
 // @Success 200 ok
 // @Failure 403 no
 // @router /SetResourceSample/ [post]
-func (u *GPController) SetResourceSample(){
+func (u *GPController) SetResourceSample() {
 	fmt.Println("aaaaaaa")
 
 	var s []int
-	err:=json.Unmarshal(u.Ctx.Input.RequestBody, &s)
+	err := json.Unmarshal(u.Ctx.Input.RequestBody, &s)
 	fmt.Println(s)
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusBadRequest)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	err=models.SetResourceSample(s)
+	err = models.SetResourceSample(s)
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 
 	}
 
-	u.Data["json"]="ok"
+	u.Data["json"] = "ok"
 	u.ServeJSON()
 	return
 }
@@ -51,48 +51,47 @@ func (u *GPController) SetResourceSample(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /StartSingleThread/ [get]
-func (u *GPController) StartSingleThread(){
-	threadId:=u.GetString("threadId")
+func (u *GPController) StartSingleThread() {
+	threadId := u.GetString("threadId")
 
-	err:=models.StartSingleThread(threadId,"Sheet1")
+	err := models.StartSingleThread(threadId, "Sheet1")
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	u.Data["json"]="ok"
+	u.Data["json"] = "ok"
 	u.ServeJSON()
 	return
 }
 
 // @Title StartMultipleThreads
 // @Description 开始多条线程 输入线程数量 和线程开始时间间隔 将自动开始 直到全部线程完成后 调用结束
-// @Param	interval	query   int	 true ">=80"
+// @Param	interval	query   int	 true ">=10"
 // @Success 200 ok
 // @Failure 403 no
 // @router /StartMultipleThreads/ [get]
-func (u *GPController) StartMultipleThreads(){
+func (u *GPController) StartMultipleThreads() {
 
-	interval,err:=u.GetInt("interval")
+	interval, err := u.GetInt("interval")
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusBadRequest)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-
-	err=models.StartMultipleThreads(interval)
+	err = models.StartMultipleThreads(interval)
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	u.Data["json"]="ok"
+	u.Data["json"] = "ok"
 	u.ServeJSON()
 	return
 }
@@ -102,21 +101,20 @@ func (u *GPController) StartMultipleThreads(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /GetLengthOfThread/ [get]
-func (u *GPController) GetLengthOfThread(){
-	u.Data["json"]=models.SheetsInfo["Sheet1"].Length
+func (u *GPController) GetLengthOfThread() {
+	u.Data["json"] = models.SheetsInfo["Sheet1"].Length
 	u.ServeJSON()
 	return
 }
-
 
 // @Title BorrowSampleShelf
 // @Description BorrowSampleShelf
 // @Success 200 ok
 // @Failure 403 no
 // @router /BorrowSampleShelf/ [get]
-func (u *GPController) BorrowSampleShelf(){
-	applyresources:=models.ResourceSet{}
-	applyresources=append(applyresources,models.ResourceDescriptor{
+func (u *GPController) BorrowSampleShelf() {
+	applyresources := models.ResourceSet{}
+	applyresources = append(applyresources, models.ResourceDescriptor{
 		Status:              0,
 		Enable:              false,
 		ResourceName:        "SampleShelf",
@@ -124,25 +122,24 @@ func (u *GPController) BorrowSampleShelf(){
 		ResourceDescription: "",
 	})
 
-	resourcemanager,err:=models.GetResourceManager()
+	resourcemanager, err := models.GetResourceManager()
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	_,err=resourcemanager.ApplyResource("",applyresources)
-
+	_, err = resourcemanager.ApplyResource("", applyresources)
 
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	u.Data["json"]="ok"
+	u.Data["json"] = "ok"
 	u.ServeJSON()
 	return
 }
@@ -152,9 +149,9 @@ func (u *GPController) BorrowSampleShelf(){
 // @Success 200 ok
 // @Failure 403 no
 // @router /ReturnSampleShelf/ [get]
-func (u *GPController) ReturnSampleShelf(){
-	applyresources:=models.ResourceSet{}
-	applyresources=append(applyresources,models.ResourceDescriptor{
+func (u *GPController) ReturnSampleShelf() {
+	applyresources := models.ResourceSet{}
+	applyresources = append(applyresources, models.ResourceDescriptor{
 		Status:              0,
 		Enable:              false,
 		ResourceName:        "SampleShelf",
@@ -162,24 +159,24 @@ func (u *GPController) ReturnSampleShelf(){
 		ResourceDescription: "",
 	})
 
-	resourcemanager,err:=models.GetResourceManager()
+	resourcemanager, err := models.GetResourceManager()
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	err=resourcemanager.ReturnResource("user",applyresources)
+	err = resourcemanager.ReturnResource("user", applyresources)
 
 	if err != nil {
 		u.Ctx.Output.SetStatus(http.StatusInternalServerError)
-		u.Data["json"]=err.Error()
+		u.Data["json"] = err.Error()
 		u.ServeJSON()
 		return
 	}
 
-	u.Data["json"]="ok"
+	u.Data["json"] = "ok"
 	u.ServeJSON()
 	return
 }

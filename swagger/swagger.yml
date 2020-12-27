@@ -62,7 +62,7 @@ paths:
       parameters:
       - in: query
         name: interval
-        description: '>=80'
+        description: '>=10'
         required: true
         type: integer
         format: int64

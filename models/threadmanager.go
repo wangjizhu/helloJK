@@ -86,6 +86,7 @@ func init() {
 func StartMultipleThreads(interval int) error {
 	wg.Add(2)
 
+	//Sheet1
 	go func() {
 		defer wg.Done()
 		err := StartSingleThread("111", "Sheet1")
@@ -95,6 +96,7 @@ func StartMultipleThreads(interval int) error {
 	}()
 	time.Sleep(time.Duration(interval) * time.Second)
 
+	//Sheet2
 	go func() {
 		defer wg.Done()
 		err := StartSingleThread("222", "Sheet2")
@@ -132,7 +134,7 @@ func StartSingleThread(threadId string, sheetName string) error {
 	fmt.Println(threadId, SheetInfo.Length)
 	for i := 4; i < SheetInfo.Length; i++ {
 		color.Set(color.FgBlue)
-		fmt.Println(threadId, SheetInfo.Rows[i][0])
+		fmt.Println(threadId, SheetInfo.Rows[i][SheetInfo.No])
 		color.Unset()
 
 		//读入行资源
@@ -140,7 +142,7 @@ func StartSingleThread(threadId string, sheetName string) error {
 		for j := SheetInfo.ResourceStart; j <= SheetInfo.ResourceEnd; j++ {
 
 			rs := resourceApplyAndReturn{
-				resourceName: SheetInfo.Rows[2][j],
+				resourceName: SheetInfo.Rows[SheetInfo.ParamNameRow][j],
 				apply:        false,
 				returnN:      false,
 			}
@@ -167,7 +169,7 @@ func StartSingleThread(threadId string, sheetName string) error {
 		//读入行参数
 		params := make(map[string]string)
 		for j := SheetInfo.ParamStart; j <= SheetInfo.ParamEnd; j++ {
-			params[SheetInfo.Rows[2][j]] = SheetInfo.Rows[i][j]
+			params[SheetInfo.Rows[SheetInfo.ParamNameRow][j]] = SheetInfo.Rows[i][j]
 
 		}
 
@@ -216,7 +218,7 @@ func StartSingleThread(threadId string, sheetName string) error {
 			return err
 		}
 
-		err = executeAction(threadId, SheetInfo.Rows[i][0], SheetInfo.Rows[i][1], SheetInfo.Rows[i][2], params, duration)
+		err = executeAction(threadId, SheetInfo.Rows[i][SheetInfo.No], SheetInfo.Rows[i][SheetInfo.ActionName], SheetInfo.Rows[i][SheetInfo.ActionNameC], params, duration)
 		if err != nil {
 			return err
 		}
